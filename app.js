@@ -1,11 +1,10 @@
 function go(screenId) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById(screenId).classList.add("active");
+
+  // إذا دخلتي QR لا نفتح تلقائي—تفتح بالضغط على المربع
 }
 
-/* =========================
-   الخدمات غير متوفرة
-========================= */
 function toastNotAvailable(){
   alert("الخدمة غير متوفرة حالياً");
 }
@@ -22,11 +21,6 @@ if (mapLayer) mapLayer.addEventListener("click", () => requestLocation());
 
 function requestLocation() {
   if (!navigator.geolocation) return;
-
-  if (location.protocol === "file:") {
-    alert("شغّلي المشروع عبر Live Server أو GitHub Pages عشان الموقع يشتغل.");
-    return;
-  }
 
   navigator.geolocation.getCurrentPosition(
     (pos) => {
@@ -52,7 +46,7 @@ function requestLocation() {
 }
 
 /* =========================
-   ✅ دورات المياه
+   ✅ دورات المياه (نفس القديم)
 ========================= */
 const menBtn = document.getElementById("menBtn");
 const womenBtn = document.getElementById("womenBtn");
@@ -171,67 +165,83 @@ if (startNavBtn) {
 }
 
 /* =========================
-   ✅ QR Camera (فعلي)
+   ✅ QR Camera (داخل المربع فقط)
 ========================= */
 let qrStream = null;
 let videoTrack = null;
 let torchOn = false;
 
-async function startCamera(){
-  const video = document.getElementById("qrVideo");
-  const note = document.getElementById("qrNote");
-  const flashBtn = document.getElementById("flashBtn");
+const qrBox = document.getElementById("qrBox");
+const qrVideo = document.getElementById("qrVideo");
+const qrTap = document.getElementById("qrTap");
+const flashBtn = document.getElementById("flashBtn");
 
-  if(!video) return;
+const qrResult = document.getElementById("qrResult");
+const qrResultText = document.getElementById("qrResultText");
+const qrClearBtn = document.getElementById("qrClearBtn");
 
-  // لازم HTTPS أو localhost
-  if (location.protocol === "file:") {
-    note.textContent = "⚠️ افتحيه عبر Live Server أو GitHub Pages عشان الكاميرا تشتغل.";
-    return;
-  }
+async function startCamera() {
+  if (!qrVideo) return;
 
-  try{
+  try {
     qrStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: "environment" },
       audio: false
     });
 
-    video.srcObject = qrStream;
+    qrVideo.srcObject = qrStream;
     videoTrack = qrStream.getVideoTracks()[0];
 
-    note.textContent = "✅ الكاميرا شغالة (إذا ما ظهر فيديو: تأكدي من إذن الكاميرا + وجود كاميرا بالجهاز).";
+    qrVideo.style.display = "block";
+    if (qrTap) qrTap.style.display = "none";
 
-    // فحص دعم الفلاش
+    // فلاش (إذا مدعوم)
     const caps = videoTrack.getCapabilities ? videoTrack.getCapabilities() : {};
-    if(!caps.torch){
+    if (!caps.torch) {
       flashBtn.disabled = true;
       flashBtn.textContent = "⚡ فلاش (غير مدعوم)";
-    }else{
+    } else {
       flashBtn.disabled = false;
       flashBtn.textContent = "⚡ فلاش";
     }
 
-  }catch(e){
-    note.textContent = "❌ ما قدرنا نشغل الكاميرا. شيكي الإذن من المتصفح أو جرّبي على جوال.";
+  } catch (e) {
+    alert("ما قدرنا نفتح الكاميرا. افتحي الرابط من Chrome على الجوال واسمحي للكاميرا.");
   }
 }
 
-function stopCamera(){
-  if(qrStream){
-    qrStream.getTracks().forEach(t=>t.stop());
+function stopCamera() {
+  if (qrStream) {
+    qrStream.getTracks().forEach(t => t.stop());
     qrStream = null;
     videoTrack = null;
     torchOn = false;
   }
+  if (qrVideo) {
+    qrVideo.srcObject = null;
+    qrVideo.style.display = "none";
+  }
+  if (qrTap) qrTap.style.display = "flex";
+
+  if (flashBtn) {
+    flashBtn.classList.remove("active");
+    flashBtn.textContent = "⚡ فلاش";
+    flashBtn.disabled = false;
+  }
 }
 
-const flashBtn = document.getElementById("flashBtn");
-if(flashBtn){
-  flashBtn.addEventListener("click", async ()=>{
-    if(!videoTrack || !videoTrack.applyConstraints) return;
+if (qrBox) {
+  qrBox.addEventListener("click", () => {
+    if (!qrStream) startCamera();
+  });
+}
+
+if (flashBtn) {
+  flashBtn.addEventListener("click", async () => {
+    if (!videoTrack || !videoTrack.applyConstraints) return;
 
     const caps = videoTrack.getCapabilities ? videoTrack.getCapabilities() : {};
-    if(!caps.torch) return;
+    if (!caps.torch) return;
 
     torchOn = !torchOn;
     await videoTrack.applyConstraints({ advanced: [{ torch: torchOn }] });
@@ -239,19 +249,28 @@ if(flashBtn){
   });
 }
 
-// محاكاة QR
-const qrMockBtn = document.getElementById("qrMockBtn");
-if(qrMockBtn){
-  qrMockBtn.addEventListener("click", ()=>{
-    const val = document.getElementById("qrMockInput").value.trim();
-    if(!val) return alert("اكتبي كود أولاً");
-    alert("✅ تم المسح (محاكاة): " + val);
+if (qrClearBtn) {
+  qrClearBtn.addEventListener("click", () => {
+    // مسح نتيجة + رجّع واجهة نظيفة + اطفئ الكاميرا
+    if (qrResult) qrResult.classList.add("hidden");
+    if (qrResultText) qrResultText.textContent = "";
+    stopCamera();
   });
 }
 
-// لو رجعتي للرئيسية أوقفي الكاميرا
-document.addEventListener("click",(e)=>{
-  if(e.target && e.target.closest && e.target.closest("[onclick*=\"go('home'\"]")){
-    stopCamera();
-  }
-});
+/* محاكاة بسيطة: أول ما تفتح الكاميرا اعتبريه "تم مسح" بعد 2 ثانية */
+function fakeScanOnce() {
+  if (!qrStream) return;
+  setTimeout(() => {
+    if (!qrStream) return;
+    if (qrResult && qrResultText) {
+      qrResultText.textContent = "DEMO-QR-12345";
+      qrResult.classList.remove("hidden");
+    }
+  }, 2000);
+}
+if (qrBox) {
+  qrBox.addEventListener("click", () => {
+    setTimeout(fakeScanOnce, 100);
+  });
+}
