@@ -35,7 +35,6 @@
       <!-- كرت الصلاة -->
       <div class="prayer-card">
         <div class="prayer-date">الأحد 15/7/1447هـ</div>
-
         <div class="prayer-row">
           <div class="pitem">الفجر<div class="picon">🌙</div><span>05:28</span></div>
           <div class="pitem">الشروق<div class="picon">🌅</div><span>06:50</span></div>
@@ -44,11 +43,10 @@
           <div class="pitem">المغرب<div class="picon">🌇</div><span>05:28</span></div>
           <div class="pitem">العشاء<div class="picon">🌙</div><span>07:00</span></div>
         </div>
-
         <div class="prayer-remaining">المتبقي على صلاة المغرب - 00:11:10</div>
       </div>
 
-      <!-- خريطة رئيسية (تطلب الموقع عند الضغط) -->
+      <!-- خريطة رئيسية -->
       <div class="map-card realmap" id="mapCard" role="button" tabindex="0" aria-label="الخريطة">
         <iframe
           id="mapFrame"
@@ -70,7 +68,6 @@
           <div class="label2">مرافق الوضوء</div>
         </button>
 
-        <!-- ✅ الخدمة الوحيدة الشغالة -->
         <button class="service" type="button" onclick="go('restrooms')">
           <div class="circle"><span class="fallback">🚻</span></div>
           <div class="label2">مرافق دورات المياه</div>
@@ -86,7 +83,7 @@
           <div class="label2">متحف</div>
         </button>
 
-        <button class="service" type="button" data-service="routes">
+        <button class="service" type="button" data-service="paths">
           <div class="circle"><span class="fallback">➡️</span></div>
           <div class="label2">المسارات</div>
         </button>
@@ -101,7 +98,7 @@
           <div class="label2">اتجاه القبلة</div>
         </button>
 
-        <button class="service" type="button" data-service="buses">
+        <button class="service" type="button" data-service="bus">
           <div class="circle"><span class="fallback">🚌</span></div>
           <div class="label2">مواقف الباصات</div>
         </button>
@@ -109,11 +106,10 @@
     </section>
 
     <!-- ===================== -->
-    <!-- ✅ شاشة: دورات المياه -->
+    <!-- شاشة: دورات المياه -->
     <!-- ===================== -->
     <section id="restrooms" class="screen">
 
-      <!-- سهم فقط يسار -->
       <div class="mini-top left">
         <button class="icon-btn" onclick="go('home')" aria-label="رجوع">←</button>
       </div>
@@ -135,7 +131,6 @@
         </button>
       </div>
 
-      <!-- 3D (مخفي لين يضغط) -->
       <div class="mosque3d-wrap">
         <img src="" alt="صورة 3D" class="mosque3d hidden" id="wc3dImage">
         <div class="placeholder" id="wc3dPlaceholder">
@@ -143,13 +138,11 @@
         </div>
       </div>
 
-      <!-- قائمة دورات المياه + المسافة -->
       <div class="list-wrap hidden" id="listWrap">
         <div class="list-title">أقرب دورات المياه</div>
         <div id="restroomList" class="restroom-list"></div>
       </div>
 
-      <!-- واجهة ابدأ التوجيه (مخفية لين يضغط على عنصر من القائمة) -->
       <div class="bottom-panel hidden" id="navPanel">
         <div class="route-header">
           <div class="route-title">خريطة المسار</div>
@@ -166,18 +159,10 @@
     </section>
 
     <!-- ===================== -->
-    <!-- ✅ شاشة: QR -->
+    <!-- ✅ شاشة: QR Scanner -->
     <!-- ===================== -->
     <section id="qr" class="screen">
-
       <div class="topbar">
-        <button class="topbtn" type="button" aria-label="الحساب">
-          <svg class="topsvg" viewBox="0 0 24 24" aria-hidden="true">
-            <path fill="currentColor"
-              d="M12 12c2.76 0 5-2.24 5-5S14.76 2 12 2 7 4.24 7 7s2.24 5 5 5Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"/>
-          </svg>
-        </button>
-
         <button class="topbtn dark" type="button" aria-label="الإشعارات">
           <svg class="topsvg" viewBox="0 0 24 24" aria-hidden="true">
             <path fill="currentColor"
@@ -185,34 +170,37 @@
           </svg>
           <span class="dot" aria-hidden="true"></span>
         </button>
+
+        <button class="topbtn" type="button" aria-label="الحساب">
+          <svg class="topsvg" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor"
+              d="M12 12c2.76 0 5-2.24 5-5S14.76 2 12 2 7 4.24 7 7s2.24 5 5 5Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"/>
+          </svg>
+        </button>
       </div>
 
-      <div class="qr-wrap">
-
-        <!-- ✅ النص فوق -->
-        <div class="qr-text top">ضع الباركود داخل الإطار للمسح</div>
-
-        <div class="qr-box">
-          <video id="qrVideo" autoplay playsinline muted></video>
-          <div class="qr-frame" aria-hidden="true"></div>
-        </div>
-
-        <!-- ✅ زر واحد فقط: فلاش -->
-        <div class="qr-actions one">
-          <button class="qr-btn" id="qrFlashBtn" type="button" aria-label="الفلاش">⚡</button>
-        </div>
-
-        <!-- ✅ زر مسح QR -->
-        <button class="qr-clear" id="qrClearBtn" type="button">مسح QR</button>
-
-        <div class="qr-msg" id="qrMsg"></div>
+      <div class="qr-frame">
+        <video id="qrVideo" playsinline autoplay muted></video>
+        <div class="qr-overlay"></div>
       </div>
 
+      <div class="qr-help">ضع الباركود داخل الإطار للمسح</div>
+
+      <button class="flash-btn" id="flashBtn" type="button">⚡ فلاش</button>
+
+      <div class="qr-note" id="qrNote">
+        ⚠️ لازم تفتحيه عبر GitHub Pages أو Live Server عشان الكاميرا تشتغل.
+      </div>
+
+      <div class="qr-mock">
+        <input id="qrMockInput" type="text" placeholder="(محاكاة) اكتبي كود QR هنا">
+        <button id="qrMockBtn" type="button">مسح</button>
+      </div>
     </section>
 
     <!-- الشريط السفلي -->
     <nav class="nav">
-      <button class="navbtn" onclick="alertUnavailable()" aria-label="القائمة">
+      <button class="navbtn" aria-label="القائمة" onclick="toastNotAvailable()">
         <span class="navicon">▦</span>
       </button>
 
@@ -220,7 +208,7 @@
         <span class="navicon">⌂</span>
       </button>
 
-      <button class="navbtn" onclick="go('qr')" aria-label="QR">
+      <button class="navbtn" onclick="go('qr'); startCamera();" aria-label="QR">
         <span class="navicon">▣</span>
       </button>
     </nav>
