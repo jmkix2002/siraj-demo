@@ -1,9 +1,29 @@
 function go(screenId) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById(screenId).classList.add("active");
+
+  // إذا فتحنا QR شغلي الكاميرا تلقائيًا
+  if (screenId === "qr") {
+    startQrCamera();
+  }
 }
 
-/* طلب الموقع من الخريطة الرئيسية */
+function alertUnavailable() {
+  alert("الخدمة غير متوفرة حالياً");
+}
+
+/* =========================
+   ✅ الخدمات غير المتوفرة
+========================= */
+document.querySelectorAll("[data-service]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    alert("الخدمة غير متوفرة حالياً");
+  });
+});
+
+/* =========================
+   ✅ طلب الموقع من الخريطة الرئيسية
+========================= */
 const mapLayer = document.getElementById("mapClickLayer");
 if (mapLayer) mapLayer.addEventListener("click", () => requestLocation());
 
@@ -39,7 +59,7 @@ function requestLocation() {
 }
 
 /* =========================
-   ✅ دورات المياه (جديد)
+   ✅ دورات المياه
 ========================= */
 const menBtn = document.getElementById("menBtn");
 const womenBtn = document.getElementById("womenBtn");
@@ -55,7 +75,7 @@ const selectedRestroomText = document.getElementById("selectedRestroomText");
 const routeImg = document.getElementById("routeImg");
 const startNavBtn = document.getElementById("startNavBtn");
 
-/* بيانات تجريبية (تقدري تغيّريها متى ما تبغين) */
+/* بيانات تجريبية */
 const DATA = {
   men: [
     { id: "M1", name: "دورة مياه (1)", note: "قريبة من المدخل", meters: 2 },
@@ -74,47 +94,37 @@ const DATA = {
 let currentGender = null;
 
 function resetRestroomsUI() {
-  // أزرار
-  menBtn.classList.remove("active");
-  womenBtn.classList.remove("active");
+  menBtn?.classList.remove("active");
+  womenBtn?.classList.remove("active");
 
-  // 3D
-  wc3dImage.classList.add("hidden");
-  wc3dImage.src = "";
-  wc3dPlaceholder.classList.remove("hidden");
+  wc3dImage?.classList.add("hidden");
+  if (wc3dImage) wc3dImage.src = "";
+  wc3dPlaceholder?.classList.remove("hidden");
 
-  // قائمة
-  listWrap.classList.add("hidden");
-  restroomList.innerHTML = "";
+  listWrap?.classList.add("hidden");
+  if (restroomList) restroomList.innerHTML = "";
 
-  // لوحة التوجيه
-  navPanel.classList.add("hidden");
-  routeImg.src = "";
-  selectedRestroomText.textContent = "";
+  navPanel?.classList.add("hidden");
+  if (routeImg) routeImg.src = "";
+  if (selectedRestroomText) selectedRestroomText.textContent = "";
 }
 
 function showGender(gender) {
   currentGender = gender;
 
-  // تفعيل الزر
   menBtn.classList.toggle("active", gender === "men");
   womenBtn.classList.toggle("active", gender === "women");
 
-  // إظهار صورة 3D + إخفاء placeholder
   wc3dPlaceholder.classList.add("hidden");
   wc3dImage.classList.remove("hidden");
 
-  if (gender === "men") {
-    wc3dImage.src = "assets/images/wc-men-3d.png";
-  } else {
-    wc3dImage.src = "assets/images/wc-women-3d.png";
-  }
+  wc3dImage.src = (gender === "men")
+    ? "assets/images/wc-men-3d.png"
+    : "assets/images/wc-women-3d.png";
 
-  // إظهار القائمة
   listWrap.classList.remove("hidden");
   renderRestroomList();
-  
-  // أخفي واجهة التوجيه لين تختارين دورة
+
   navPanel.classList.add("hidden");
   routeImg.src = "";
   selectedRestroomText.textContent = "";
@@ -122,8 +132,8 @@ function showGender(gender) {
 
 function renderRestroomList() {
   restroomList.innerHTML = "";
-
   const items = DATA[currentGender] || [];
+
   items.forEach((r) => {
     const btn = document.createElement("button");
     btn.className = "restroom-item";
@@ -146,26 +156,18 @@ function renderRestroomList() {
 }
 
 function openNavigation(restroom) {
-  // اظهار لوحة التوجيه
   navPanel.classList.remove("hidden");
-
-  // نص مختصر فوق
   selectedRestroomText.textContent = `${restroom.name} • ${restroom.meters}m`;
 
-  // ✅ هنا نعرض صورة "ابدأ التوجيه" حسب رجال/نساء
-  if (currentGender === "men") {
-    routeImg.src = "assets/images/route-men.png";
-  } else {
-    routeImg.src = "assets/images/route-women.png";
-  }
+  routeImg.src = (currentGender === "men")
+    ? "assets/images/route-men.png"
+    : "assets/images/route-women.png";
 
-  // سكرول تلقائي للوحة التوجيه عشان المستخدم يشوفها
   navPanel.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 if (menBtn && womenBtn) {
   resetRestroomsUI();
-
   menBtn.addEventListener("click", () => showGender("men"));
   womenBtn.addEventListener("click", () => showGender("women"));
 }
@@ -178,4 +180,72 @@ if (startNavBtn) {
     }
     alert("✅ تم بدء التوجيه (محاكاة)");
   });
+}
+
+/* =========================
+   ✅ QR (كاميرا + فلاش + مسح)
+========================= */
+const qrVideo = document.getElementById("qrVideo");
+const qrMsg = document.getElementById("qrMsg");
+const qrFlashBtn = document.getElementById("qrFlashBtn");
+const qrClearBtn = document.getElementById("qrClearBtn");
+
+let qrStream = null;
+let flashOn = false;
+
+async function startQrCamera() {
+  if (!qrVideo || !qrMsg) return;
+
+  qrMsg.textContent = "جاري تشغيل الكاميرا...";
+
+  if (!navigator.mediaDevices?.getUserMedia) {
+    qrMsg.textContent = "⚠️ متصفحك لا يدعم الكاميرا (محاكاة).";
+    return;
+  }
+
+  try {
+    if (qrStream) {
+      qrStream.getTracks().forEach(t => t.stop());
+      qrStream = null;
+    }
+
+    qrStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" },
+      audio: false
+    });
+
+    qrVideo.srcObject = qrStream;
+    qrMsg.textContent = "✅ الكاميرا شغالة (محاكاة) — اضغطي ⚡ للفلاش أو (مسح QR).";
+  } catch (e) {
+    qrMsg.textContent = "❌ تم رفض إذن الكاميرا. (جرّبي GitHub Pages / Live Server)";
+  }
+}
+
+function clearQr() {
+  if (qrMsg) qrMsg.textContent = "تم مسح QR ✅ (جاهز لمسح جديد)";
+}
+
+/* فلاش (يحاول حقيقي، وإلا محاكاة) */
+if (qrFlashBtn) {
+  qrFlashBtn.addEventListener("click", async () => {
+    flashOn = !flashOn;
+
+    try {
+      const track = qrStream?.getVideoTracks?.()[0];
+      const caps = track?.getCapabilities?.();
+      if (track && caps && caps.torch) {
+        await track.applyConstraints({ advanced: [{ torch: flashOn }] });
+        qrFlashBtn.classList.toggle("active", flashOn);
+        if (qrMsg) qrMsg.textContent = flashOn ? "⚡ الفلاش شغّال" : "⚡ الفلاش مطفي";
+        return;
+      }
+    } catch (_) {}
+
+    qrFlashBtn.classList.toggle("active", flashOn);
+    if (qrMsg) qrMsg.textContent = flashOn ? "⚡ الفلاش شغّال (محاكاة)" : "⚡ الفلاش مطفي (محاكاة)";
+  });
+}
+
+if (qrClearBtn) {
+  qrClearBtn.addEventListener("click", () => clearQr());
 }
