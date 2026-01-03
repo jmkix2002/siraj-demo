@@ -48,7 +48,7 @@
         <div class="prayer-remaining">المتبقي على صلاة المغرب - 00:11:10</div>
       </div>
 
-      <!-- خريطة رئيسية -->
+      <!-- خريطة رئيسية (تطلب الموقع عند الضغط) -->
       <div class="map-card realmap" id="mapCard" role="button" tabindex="0" aria-label="الخريطة">
         <iframe
           id="mapFrame"
@@ -66,10 +66,11 @@
         </button>
 
         <button class="service" type="button" data-service="wudu">
-          <div class="circle"><span class="fallback">🚰</span></div>
+          <div class="circle"><span class="fallback">🧼</span></div>
           <div class="label2">مرافق الوضوء</div>
         </button>
 
+        <!-- ✅ الخدمة الوحيدة الشغالة -->
         <button class="service" type="button" onclick="go('restrooms')">
           <div class="circle"><span class="fallback">🚻</span></div>
           <div class="label2">مرافق دورات المياه</div>
@@ -85,7 +86,7 @@
           <div class="label2">متحف</div>
         </button>
 
-        <button class="service" type="button" data-service="paths">
+        <button class="service" type="button" data-service="routes">
           <div class="circle"><span class="fallback">➡️</span></div>
           <div class="label2">المسارات</div>
         </button>
@@ -100,7 +101,7 @@
           <div class="label2">اتجاه القبلة</div>
         </button>
 
-        <button class="service" type="button" data-service="bus">
+        <button class="service" type="button" data-service="buses">
           <div class="circle"><span class="fallback">🚌</span></div>
           <div class="label2">مواقف الباصات</div>
         </button>
@@ -108,9 +109,11 @@
     </section>
 
     <!-- ===================== -->
-    <!-- شاشة: دورات المياه -->
+    <!-- ✅ شاشة: دورات المياه -->
     <!-- ===================== -->
     <section id="restrooms" class="screen">
+
+      <!-- سهم فقط يسار -->
       <div class="mini-top left">
         <button class="icon-btn" onclick="go('home')" aria-label="رجوع">←</button>
       </div>
@@ -132,6 +135,7 @@
         </button>
       </div>
 
+      <!-- 3D (مخفي لين يضغط) -->
       <div class="mosque3d-wrap">
         <img src="" alt="صورة 3D" class="mosque3d hidden" id="wc3dImage">
         <div class="placeholder" id="wc3dPlaceholder">
@@ -139,11 +143,13 @@
         </div>
       </div>
 
+      <!-- قائمة دورات المياه + المسافة -->
       <div class="list-wrap hidden" id="listWrap">
         <div class="list-title">أقرب دورات المياه</div>
         <div id="restroomList" class="restroom-list"></div>
       </div>
 
+      <!-- واجهة ابدأ التوجيه (مخفية لين يضغط على عنصر من القائمة) -->
       <div class="bottom-panel hidden" id="navPanel">
         <div class="route-header">
           <div class="route-title">خريطة المسار</div>
@@ -156,12 +162,14 @@
 
         <button class="start-btn" id="startNavBtn" type="button">ابدأ التوجيه</button>
       </div>
+
     </section>
 
     <!-- ===================== -->
-    <!-- ✅ شاشة: QR (الستايل القديم لكن كاميرا حقيقية) -->
+    <!-- ✅ شاشة: QR -->
     <!-- ===================== -->
     <section id="qr" class="screen">
+
       <div class="topbar">
         <button class="topbtn" type="button" aria-label="الحساب">
           <svg class="topsvg" viewBox="0 0 24 24" aria-hidden="true">
@@ -179,35 +187,36 @@
         </button>
       </div>
 
-      <!-- الكلام فوق -->
-      <div class="qr-title">ضع الباركود داخل الإطار للمسح</div>
+      <div class="qr-wrap">
 
-      <!-- المربع (هو اللي يفتح كاميرا حقيقية) -->
-      <div class="qr-box" id="qrBox" role="button" tabindex="0" aria-label="فتح الكاميرا">
-        <video id="qrVideo" playsinline autoplay muted></video>
-        <div class="qr-corners" aria-hidden="true"></div>
-        <div class="qr-tap" id="qrTap">اضغط لفتح الكاميرا</div>
+        <!-- ✅ النص فوق -->
+        <div class="qr-text top">ضع الباركود داخل الإطار للمسح</div>
+
+        <div class="qr-box">
+          <video id="qrVideo" autoplay playsinline muted></video>
+          <div class="qr-frame" aria-hidden="true"></div>
+        </div>
+
+        <!-- ✅ زر واحد فقط: فلاش -->
+        <div class="qr-actions one">
+          <button class="qr-btn" id="qrFlashBtn" type="button" aria-label="الفلاش">⚡</button>
+        </div>
+
+        <!-- ✅ زر مسح QR -->
+        <button class="qr-clear" id="qrClearBtn" type="button">مسح QR</button>
+
+        <div class="qr-msg" id="qrMsg"></div>
       </div>
 
-      <!-- زر فلاش فقط -->
-      <button class="qr-flash" id="flashBtn" type="button">⚡ فلاش</button>
-
-      <!-- نتيجة مسح (محاكاة) -->
-      <div class="qr-result hidden" id="qrResult">
-        ✅ تم المسح (محاكاة): <span id="qrResultText"></span>
-      </div>
-
-      <!-- زر مسح/Reset -->
-      <button class="qr-clear" id="qrClearBtn" type="button">مسح</button>
     </section>
 
     <!-- الشريط السفلي -->
     <nav class="nav">
-      <button class="navbtn" aria-label="القائمة" onclick="toastNotAvailable()">
+      <button class="navbtn" onclick="alertUnavailable()" aria-label="القائمة">
         <span class="navicon">▦</span>
       </button>
 
-      <button class="navbtn home" onclick="go('home'); stopCamera();" aria-label="الرئيسية">
+      <button class="navbtn home" onclick="go('home')" aria-label="الرئيسية">
         <span class="navicon">⌂</span>
       </button>
 
