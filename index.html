@@ -35,6 +35,7 @@
       <!-- كرت الصلاة -->
       <div class="prayer-card">
         <div class="prayer-date">الأحد 15/7/1447هـ</div>
+
         <div class="prayer-row">
           <div class="pitem">الفجر<div class="picon">🌙</div><span>05:28</span></div>
           <div class="pitem">الشروق<div class="picon">🌅</div><span>06:50</span></div>
@@ -43,6 +44,7 @@
           <div class="pitem">المغرب<div class="picon">🌇</div><span>05:28</span></div>
           <div class="pitem">العشاء<div class="picon">🌙</div><span>07:00</span></div>
         </div>
+
         <div class="prayer-remaining">المتبقي على صلاة المغرب - 00:11:10</div>
       </div>
 
@@ -109,7 +111,6 @@
     <!-- شاشة: دورات المياه -->
     <!-- ===================== -->
     <section id="restrooms" class="screen">
-
       <div class="mini-top left">
         <button class="icon-btn" onclick="go('home')" aria-label="رجوع">←</button>
       </div>
@@ -155,14 +156,20 @@
 
         <button class="start-btn" id="startNavBtn" type="button">ابدأ التوجيه</button>
       </div>
-
     </section>
 
     <!-- ===================== -->
-    <!-- ✅ شاشة: QR Scanner -->
+    <!-- ✅ شاشة: QR (الستايل القديم لكن كاميرا حقيقية) -->
     <!-- ===================== -->
     <section id="qr" class="screen">
       <div class="topbar">
+        <button class="topbtn" type="button" aria-label="الحساب">
+          <svg class="topsvg" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor"
+              d="M12 12c2.76 0 5-2.24 5-5S14.76 2 12 2 7 4.24 7 7s2.24 5 5 5Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"/>
+          </svg>
+        </button>
+
         <button class="topbtn dark" type="button" aria-label="الإشعارات">
           <svg class="topsvg" viewBox="0 0 24 24" aria-hidden="true">
             <path fill="currentColor"
@@ -170,32 +177,28 @@
           </svg>
           <span class="dot" aria-hidden="true"></span>
         </button>
-
-        <button class="topbtn" type="button" aria-label="الحساب">
-          <svg class="topsvg" viewBox="0 0 24 24" aria-hidden="true">
-            <path fill="currentColor"
-              d="M12 12c2.76 0 5-2.24 5-5S14.76 2 12 2 7 4.24 7 7s2.24 5 5 5Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"/>
-          </svg>
-        </button>
       </div>
 
-      <div class="qr-frame">
+      <!-- الكلام فوق -->
+      <div class="qr-title">ضع الباركود داخل الإطار للمسح</div>
+
+      <!-- المربع (هو اللي يفتح كاميرا حقيقية) -->
+      <div class="qr-box" id="qrBox" role="button" tabindex="0" aria-label="فتح الكاميرا">
         <video id="qrVideo" playsinline autoplay muted></video>
-        <div class="qr-overlay"></div>
+        <div class="qr-corners" aria-hidden="true"></div>
+        <div class="qr-tap" id="qrTap">اضغط لفتح الكاميرا</div>
       </div>
 
-      <div class="qr-help">ضع الباركود داخل الإطار للمسح</div>
+      <!-- زر فلاش فقط -->
+      <button class="qr-flash" id="flashBtn" type="button">⚡ فلاش</button>
 
-      <button class="flash-btn" id="flashBtn" type="button">⚡ فلاش</button>
-
-      <div class="qr-note" id="qrNote">
-        ⚠️ لازم تفتحيه عبر GitHub Pages أو Live Server عشان الكاميرا تشتغل.
+      <!-- نتيجة مسح (محاكاة) -->
+      <div class="qr-result hidden" id="qrResult">
+        ✅ تم المسح (محاكاة): <span id="qrResultText"></span>
       </div>
 
-      <div class="qr-mock">
-        <input id="qrMockInput" type="text" placeholder="(محاكاة) اكتبي كود QR هنا">
-        <button id="qrMockBtn" type="button">مسح</button>
-      </div>
+      <!-- زر مسح/Reset -->
+      <button class="qr-clear" id="qrClearBtn" type="button">مسح</button>
     </section>
 
     <!-- الشريط السفلي -->
@@ -204,11 +207,11 @@
         <span class="navicon">▦</span>
       </button>
 
-      <button class="navbtn home" onclick="go('home')" aria-label="الرئيسية">
+      <button class="navbtn home" onclick="go('home'); stopCamera();" aria-label="الرئيسية">
         <span class="navicon">⌂</span>
       </button>
 
-      <button class="navbtn" onclick="go('qr'); startCamera();" aria-label="QR">
+      <button class="navbtn" onclick="go('qr')" aria-label="QR">
         <span class="navicon">▣</span>
       </button>
     </nav>
