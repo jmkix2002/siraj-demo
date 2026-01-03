@@ -43,12 +43,6 @@ body{
 
 .hidden{ display:none !important; }
 
-.title{
-  text-align: center;
-  margin: 6px 0 14px;
-  color: #2b2e46;
-}
-
 /* Topbar */
 .topbar{
   display:flex;
@@ -171,36 +165,6 @@ body{
 
 .fallback{ color: #2b2e46; font-weight: 700; font-size: 18px; }
 .label2{ font-size: 12px; line-height: 1.2; }
-
-/* Buttons */
-.btn{
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 18px;
-  background: #1f7a5b;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-  margin: 10px 0;
-}
-.btn.light{ background: #e9f3ef; color: #1f7a5b; }
-
-.grid2{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin: 12px 0;
-}
-.tile{
-  padding: 14px;
-  border-radius: 14px;
-  border: 1px solid #e5e7eb;
-  background: white;
-  cursor: pointer;
-  font-size: 14px;
-  text-align: center;
-}
 
 /* Nav */
 .nav{
@@ -458,4 +422,88 @@ body{
   font-size: 20px;
   font-weight: 700;
   cursor: pointer;
+}
+
+/* =========================
+   ✅ QR Screen
+========================= */
+.qr-wrap{
+  width: 100%;
+  max-width: 345px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.qr-text{
+  margin: 12px 0 10px;
+  color: rgba(43,46,70,0.85);
+  font-size: 14px;
+}
+.qr-text.top{ margin-top: 2px; }
+
+.qr-box{
+  width: 100%;
+  height: 330px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: rgba(43,46,70,0.12);
+  position: relative;
+  border: 1px solid rgba(51,54,82,0.25);
+}
+
+.qr-box video{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display:block;
+}
+
+.qr-frame{
+  position: absolute;
+  inset: 22px;
+  border-radius: 18px;
+  border: 3px solid rgba(43,46,70,0.35);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.35);
+}
+
+.qr-actions{
+  display:flex;
+  justify-content:center;
+  gap: 14px;
+  margin-top: 14px;
+}
+.qr-actions.one{ gap: 0; }
+
+.qr-btn{
+  width: 86px;
+  height: 58px;
+  border-radius: 16px;
+  border: 1px solid rgba(51,54,82,0.25);
+  background: rgba(255,255,255,0.80);
+  cursor: pointer;
+  font-size: 26px;
+}
+.qr-btn.active{
+  background: rgba(51,54,82,0.18);
+  border-color: rgba(51,54,82,0.35);
+}
+
+.qr-clear{
+  margin-top: 14px;
+  width: 100%;
+  height: 54px;
+  border-radius: 18px;
+  border: 1px solid rgba(51,54,82,0.25);
+  background: rgba(255,255,255,0.80);
+  cursor: pointer;
+  font-size: 16px;
+  color: #2b2e46;
+  font-weight: 700;
+}
+
+.qr-msg{
+  margin-top: 12px;
+  color: rgba(43,46,70,0.85);
+  font-size: 13px;
+  min-height: 18px;
 }
