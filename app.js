@@ -18,6 +18,13 @@ function go(screenId) {
   if (screenId === "restrooms") {
     resetRestroomsUI();
   }
+
+  // ✅ تشغيل القبلة تلقائي عند فتح الشاشة
+  if (screenId === "qibla") {
+    startQiblaAuto();
+  } else {
+    stopQibla(); // وقف المستمعات إذا خرجنا من صفحة القبلة
+  }
 }
 
 /* =========================
@@ -48,7 +55,7 @@ function setActiveNav(screenId){
 
   if (screenId === "qr"){
     if (navQr) navQr.classList.add("active");
-  }else if (screenId === "home" || screenId === "restrooms" || screenId === "wudu"){
+  }else if (screenId === "home" || screenId === "restrooms" || screenId === "wudu" || screenId === "qibla"){
     if (navHome) navHome.classList.add("active");
   }
 }
@@ -92,7 +99,7 @@ function setNavVisible(visible){
   bottomNav.classList.toggle("is-hidden", !visible);
 }
 function updateUIForScreen(screenId){
-  const showNavScreens = ["home", "restrooms", "wudu", "qr"];
+  const showNavScreens = ["home", "restrooms", "wudu", "qr", "qibla"];
   setNavVisible(showNavScreens.includes(screenId) && isLoggedIn());
 }
 
@@ -191,41 +198,6 @@ function logout(){
 
   go("splash");
   setTimeout(() => go("auth"), 1600);
-}
-
-/* =========================
-   Map geolocation (works on Live Server)
-========================= */
-const mapLayer = document.getElementById("mapClickLayer");
-if (mapLayer) mapLayer.addEventListener("click", () => requestLocation());
-
-function requestLocation() {
-  if (!navigator.geolocation){
-    alert("المتصفح لا يدعم تحديد الموقع");
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const lat = pos.coords.latitude;
-      const lon = pos.coords.longitude;
-
-      const delta = 0.01;
-      const left = (lon - delta).toFixed(6);
-      const bottom = (lat - delta).toFixed(6);
-      const right = (lon + delta).toFixed(6);
-      const top = (lat + delta).toFixed(6);
-
-      const frame = document.getElementById("mapFrame");
-      if (frame) {
-        frame.src =
-          `https://www.openstreetmap.org/export/embed.html?bbox=${left}%2C${bottom}%2C${right}%2C${top}` +
-          `&layer=mapnik&marker=${lat}%2C${lon}`;
-      }
-    },
-    () => alert("تم رفض إذن الموقع أو تعذر تحديده.\nملاحظة: لازم تفتحيه عبر Live Server."),
-    { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
-  );
 }
 
 /* =========================
@@ -348,6 +320,8 @@ let currentGender = null;
 
 function resetRestroomsUI(){
   if(!menBtn || !womenBtn) return;
+
+  currentGender = null;
 
   menBtn.classList.remove("active");
   womenBtn.classList.remove("active");
@@ -641,20 +615,24 @@ function fakeScanOnce(){
     }
   }, 2000);
 }
+
 /* =========================
-   QIBLA (Real Direction)
+   QIBLA (AUTO + زاوية الانحراف + اهتزاز)
 ========================= */
-const qiblaEnableBtn = document.getElementById("qiblaEnableBtn");
+const QIBLA_ID = "qibla";
 const qiblaNeedle = document.getElementById("qiblaNeedle");
 const qiblaDeg = document.getElementById("qiblaDeg");
-const qiblaHint = document.getElementById("qiblaHint");
+const qiblaKaaba = document.querySelector("#qibla .qibla-kaaba");
+
+const DEG_THRESHOLD = 5; // ± درجات للوصول
 
 // إحداثيات الكعبة
 const KAABA = { lat: 21.422487, lon: 39.826206 };
 
-let userPos = null;
-let qiblaBearing = null;     // زاوية القبلة من الشمال الحقيقي
-let currentHeading = null;   // اتجاه الجهاز
+let qiblaActive = false;
+let qiblaBearing = null;     // زاوية القبلة من الشمال الحقيقي (0..360)
+let currentHeading = null;   // اتجاه الجهاز (0..360)
+let didBuzz = false;
 
 function toRad(d){ return d * Math.PI / 180; }
 function toDeg(r){ return r * 180 / Math.PI; }
@@ -662,6 +640,13 @@ function norm360(a){
   a = a % 360;
   if (a < 0) a += 360;
   return a;
+}
+// فرق زاويتين (يرجع قيمة من -180 إلى +180)
+function angleDiff(a, b){
+  let d = norm360(a) - norm360(b);
+  if (d > 180) d -= 360;
+  if (d < -180) d += 360;
+  return d;
 }
 
 function calcBearing(lat1, lon1, lat2, lon2){
@@ -675,73 +660,117 @@ function calcBearing(lat1, lon1, lat2, lon2){
   return norm360(toDeg(Math.atan2(y, x)));
 }
 
-function updateQiblaUI(){
-  if (!qiblaNeedle) return;
-
-  if (qiblaBearing == null || currentHeading == null){
-    qiblaDeg && (qiblaDeg.textContent = "--°");
-    return;
-  }
-
-  // كم نلف السهم؟ = bearing القبلة - heading الجهاز
-  const diff = norm360(qiblaBearing - currentHeading);
-
-  qiblaNeedle.style.transform = `translate(-50%,-50%) rotate(${diff}deg)`;
-  qiblaDeg && (qiblaDeg.textContent = `${Math.round(qiblaBearing)}°`);
+function isQiblaScreenActive(){
+  const s = document.getElementById(QIBLA_ID);
+  return !!(s && s.classList.contains("active"));
 }
 
-function requestLocationForQibla(){
+function updateQiblaUI(){
+  if (!isQiblaScreenActive()) return;
+  if (!qiblaNeedle || !qiblaDeg) return;
+  if (qiblaBearing == null || currentHeading == null) return;
+
+  // دوران السهم: (زاوية القبلة - اتجاه الجهاز)
+  const rotate = angleDiff(qiblaBearing, currentHeading); // -180..180
+  qiblaNeedle.style.transform = `translate(-50%,-50%) rotate(${rotate}deg)`;
+
+  const err = Math.abs(rotate);
+
+  // ✅ النص الوحيد المطلوب
+  qiblaDeg.textContent = `زاوية الانحراف عن القبلة: ${Math.round(err)}°`;
+
+  // ✅ وصول: اهتزاز + وميض الكعبة
+  if (err <= DEG_THRESHOLD){
+    if (qiblaKaaba) qiblaKaaba.classList.add("qibla-hit");
+
+    if (!didBuzz){
+      didBuzz = true;
+      if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
+    }
+  } else {
+    if (qiblaKaaba) qiblaKaaba.classList.remove("qibla-hit");
+    didBuzz = false;
+  }
+}
+
+async function requestLocationForQibla(){
   return new Promise((resolve, reject)=>{
-    if (!navigator.geolocation) return reject("المتصفح لا يدعم تحديد الموقع");
+    if (!navigator.geolocation) return reject(new Error("no geo"));
 
     navigator.geolocation.getCurrentPosition(
       (pos)=>{
-        userPos = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-        qiblaBearing = calcBearing(userPos.lat, userPos.lon, KAABA.lat, KAABA.lon);
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        qiblaBearing = calcBearing(lat, lon, KAABA.lat, KAABA.lon);
         resolve(true);
       },
-      ()=>reject("تم رفض إذن الموقع أو تعذر تحديده"),
+      ()=>reject(new Error("geo denied")),
       { enableHighAccuracy:true, timeout: 10000, maximumAge:0 }
     );
   });
 }
 
 function handleOrientation(evt){
+  if (!qiblaActive) return;
+  if (!isQiblaScreenActive()) return;
+
   // iOS يعطي webkitCompassHeading
   if (typeof evt.webkitCompassHeading === "number"){
     currentHeading = norm360(evt.webkitCompassHeading);
   } else if (typeof evt.alpha === "number"){
-    // alpha: 0 = شمال (لكن تختلف حسب الجهاز/المتصفح)
+    // alpha: 0 = شمال (قد تختلف حسب الجهاز)
     currentHeading = norm360(360 - evt.alpha);
   } else {
     return;
   }
+
   updateQiblaUI();
 }
 
-async function enableQibla(){
-  try{
-    qiblaHint && (qiblaHint.textContent = "جاري التفعيل...");
+async function startQiblaAuto(){
+  if (qiblaActive) return;
+  qiblaActive = true;
 
+  // تنظيف الحالة
+  qiblaBearing = null;
+  currentHeading = null;
+  didBuzz = false;
+  if (qiblaKaaba) qiblaKaaba.classList.remove("qibla-hit");
+  if (qiblaDeg) qiblaDeg.textContent = "زاوية الانحراف عن القبلة: --°";
+
+  try{
     await requestLocationForQibla();
 
     // طلب إذن البوصلة في iOS
     if (typeof DeviceOrientationEvent !== "undefined" &&
         typeof DeviceOrientationEvent.requestPermission === "function"){
       const res = await DeviceOrientationEvent.requestPermission();
-      if (res !== "granted") throw new Error("تم رفض إذن البوصلة");
+      if (res !== "granted") throw new Error("orientation denied");
     }
 
     window.addEventListener("deviceorientation", handleOrientation, true);
-
-    qiblaHint && (qiblaHint.textContent = "حرّكي الجوال شوي لين تثبت البوصلة ✅");
-    updateQiblaUI();
   }catch(e){
-    qiblaHint && (qiblaHint.textContent = "ما اشتغل: " + (e?.message || e));
+    // حسب طلبك: ما نكتب رسائل إضافية هنا
   }
 }
 
-if (qiblaEnableBtn){
-  qiblaEnableBtn.addEventListener("click", enableQibla);
+function stopQibla(){
+  if (!qiblaActive) return;
+  qiblaActive = false;
+
+  window.removeEventListener("deviceorientation", handleOrientation, true);
+
+  didBuzz = false;
+  currentHeading = null;
+  qiblaBearing = null;
+
+  if (qiblaKaaba) qiblaKaaba.classList.remove("qibla-hit");
 }
- 
+
+/* =========================
+   Auto start if user opens Qibla directly (optional safety)
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+  // إذا كانت القبلة هي الشاشة النشطة عند التحميل
+  if (isQiblaScreenActive()) startQiblaAuto();
+});
