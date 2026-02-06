@@ -420,13 +420,13 @@ const WUDU_DATA = {
     { id:"WM1", name:"مرفق وضوء (1)", note:"قريب من المدخل", meters: 5 },
     { id:"WM2", name:"مرفق وضوء (2)", note:"قريب من الساحة", meters: 20 },
     { id:"WM3", name:"مرفق وضوء (3)", note:"جهة الممر", meters: 38 },
-    { id:"WM4", name:"مرفق وضوء (4)", note:"جهة المواقف", meters: 62 },
+    { id:"WM4", name:"جهة المواقف", meters: 62 },
   ],
   women: [
     { id:"WW1", name:"مرفق وضوء (1)", note:"قريب من المصلى النسائي", meters: 6 },
     { id:"WW2", name:"مرفق وضوء (2)", note:"قريب من الساحة", meters: 24 },
     { id:"WW3", name:"مرفق وضوء (3)", note:"جهة الممر", meters: 42 },
-    { id:"WW4", name:"مرفق وضوء (4)", note:"جهة المواقف", meters: 70 },
+    { id:"WW4", name:"جهة المواقف", meters: 70 },
   ]
 };
 
@@ -613,7 +613,7 @@ function fakeScanOnce(){
 }
 
 /* =========================
-   QIBLA (Real Direction)
+   QIBLA (AUTO + VIBRATE + ONLY DEVIATION TEXT)
 ========================= */
 const qiblaNeedle = document.getElementById("qiblaNeedle");
 const qiblaDeg    = document.getElementById("qiblaDeg");
@@ -622,12 +622,12 @@ const qiblaHint   = document.getElementById("qiblaHint");
 // إحداثيات الكعبة
 const KAABA = { lat: 21.422487, lon: 39.826206 };
 
-let userPos = null;
-let qiblaBearing = null;     // bearing from true north
-let heading = null;          // device heading 0..360
+let qiblaBearing = null;   // زاوية القبلة من الشمال الحقيقي 0..360
+let heading = null;        // اتجاه الجهاز 0..360
 let didBuzz = false;
+let qiblaListening = false;
 
-const DEG_THRESHOLD = 5;     // وصول القبلة ±5 درجات
+const DEG_THRESHOLD = 5;   // وصول القبلة ±5 درجات
 
 function toRad(d){ return d * Math.PI / 180; }
 function toDeg(r){ return r * 180 / Math.PI; }
@@ -656,23 +656,19 @@ function calcBearing(lat1, lon1, lat2, lon2){
 
 function updateQiblaUI(){
   if (!qiblaNeedle || !qiblaDeg) return;
+  if (qiblaHint) qiblaHint.textContent = ""; // بدون رسائل
 
   if (qiblaBearing == null || heading == null){
     qiblaDeg.textContent = "--°";
-    if (qiblaHint) qiblaHint.textContent = "جارٍ تفعيل البوصلة...";
     return;
   }
 
-  // دوران السهم: القبلة - اتجاه الجهاز (فرق -180..180)
   const rotate = angleDiff(qiblaBearing, heading);
-
-  // لا نكسر translate الموجود في CSS: نخليه داخل transform كاملة
   qiblaNeedle.style.transform = `translate(-50%,-50%) rotate(${rotate}deg)`;
 
   const err = Math.abs(rotate);
   qiblaDeg.textContent = `زاوية الانحراف عن القبلة: ${Math.round(err)}°`;
 
-  // اهتزاز عند الوصول
   if (err <= DEG_THRESHOLD){
     if (!didBuzz){
       didBuzz = true;
@@ -685,71 +681,72 @@ function updateQiblaUI(){
 
 function requestLocationForQibla(){
   return new Promise((resolve, reject)=>{
-    if (!navigator.geolocation) return reject("المتصفح لا يدعم تحديد الموقع");
+    if (!navigator.geolocation) return reject(new Error("NO_GEO"));
 
     navigator.geolocation.getCurrentPosition(
       (pos)=>{
-        userPos = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-        qiblaBearing = calcBearing(userPos.lat, userPos.lon, KAABA.lat, KAABA.lon);
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        qiblaBearing = calcBearing(lat, lon, KAABA.lat, KAABA.lon);
         resolve(true);
       },
-      ()=>reject("تم رفض إذن الموقع أو تعذر تحديده"),
+      ()=>reject(new Error("GEO_DENIED")),
       { enableHighAccuracy:true, timeout: 12000, maximumAge:0 }
     );
   });
 }
 
-function onOrientation(evt){
-  // iOS Safari الأفضل
-  if (typeof evt.webkitCompassHeading === "number"){
-    heading = norm360(evt.webkitCompassHeading);
-  }
-  // Android/Chrome
-  else if (typeof evt.alpha === "number"){
-    // alpha أحيانًا يعكس الاتجاه، نجرب 360 - alpha
-    heading = norm360(360 - evt.alpha);
-  } else {
-    return;
+function getHeadingFromEvent(evt){
+  // iOS Safari (أفضل)
+  if (typeof evt.webkitCompassHeading === "number" && !Number.isNaN(evt.webkitCompassHeading)){
+    return norm360(evt.webkitCompassHeading);
   }
 
+  // Android/Chrome
+  if (typeof evt.alpha === "number" && !Number.isNaN(evt.alpha)){
+    // ملاحظة: كثير أجهزة تطلع alpha عكسية، هذا الأكثر شيوعًا
+    return norm360(360 - evt.alpha);
+  }
+
+  return null;
+}
+
+function onOrientation(evt){
+  const h = getHeadingFromEvent(evt);
+  if (h == null) return;
+  heading = h;
   updateQiblaUI();
 }
 
-let qiblaListening = false;
+async function startQiblaAuto(){
+  didBuzz = false;
 
-async function enableQiblaAuto(){
+  // لازم سياق آمن
+  if (!window.isSecureContext){
+    // بدون رسائل – بس نخليها "--°"
+    return;
+  }
+
   try{
-    if (qiblaHint) qiblaHint.textContent = "جاري التفعيل...";
-
     await requestLocationForQibla();
 
-    // iOS permission (لازم يكون بسبب تفاعل أو دخول صفحة من زر go)
+    // طلب إذن البوصلة في iOS
     if (typeof DeviceOrientationEvent !== "undefined" &&
         typeof DeviceOrientationEvent.requestPermission === "function"){
       const res = await DeviceOrientationEvent.requestPermission();
-      if (res !== "granted") throw new Error("تم رفض إذن البوصلة");
+      if (res !== "granted") return; // بدون رسائل
     }
 
     if (!qiblaListening){
-      // بعض الأجهزة أفضل لها absolute
       window.addEventListener("deviceorientationabsolute", onOrientation, true);
       window.addEventListener("deviceorientation", onOrientation, true);
       qiblaListening = true;
     }
 
-    if (qiblaHint) qiblaHint.textContent = "";
     updateQiblaUI();
-  }catch(e){
-    if (qiblaHint) qiblaHint.textContent = "تعذر تفعيل البوصلة. افتحي الموقع من Safari/Chrome على الجوال واسمحي بالأذونات.";
+  } catch(e){
+    // بدون رسائل
   }
-}
-
-/* =========================
-   Qibla AUTO start/stop (USED BY go())
-========================= */
-async function startQiblaAuto(){
-  didBuzz = false;
-  await enableQiblaAuto();
 }
 
 function stopQibla(){
@@ -759,14 +756,6 @@ function stopQibla(){
     qiblaListening = false;
   }
   heading = null;
-  // لا نغيّر qiblaBearing لأن الموقع ثابت
+  didBuzz = false;
+  updateQiblaUI();
 }
-
-/* =========================
-   OPTIONAL: directions labels (N/E/S/W) in DOM
-   If you added them in HTML, they stay visible by CSS only
-========================= */
-
-/* NOTE:
-   ما نحتاج hookQiblaOnGo هنا لأن go() نفسه صار يستدعي startQiblaAuto()
-*/
