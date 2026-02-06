@@ -1,509 +1,846 @@
+*{ box-sizing:border-box; }
+
 body{
-  margin: 0;
+  margin:0;
   font-family: Arial, sans-serif;
-  background: #f3f4f6;
-  display: flex;
-  justify-content: center;
-  padding: 20px 0;
+  background:#f3f4f6;
+  display:flex;
+  justify-content:center;
+  padding:20px 0;
 }
 
 .app{
-  width: 393px;
-  height: 852px;
-  border-radius: 34px;
-  border: 1px solid #333652;
-  background: #eef1f6;
-  overflow: hidden;
-  position: relative;
+  width:393px;
+  height:852px;
+  border-radius:34px;
+  border:1px solid #333652;
+  background:#eef1f6;
+  overflow:hidden;
+  position:relative;
 }
 
-/* شاشة واحدة + سكرول يمين صغير */
+/* Screens */
 .screen{
-  position: absolute;
-  inset: 0;
-  display: none;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 18px 16px 110px;
-  box-sizing: border-box;
+  position:absolute;
+  inset:0;
+  display:none;
 
-  direction: ltr;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(43,46,70,0.15) transparent;
+  overflow-y:auto;
+  overflow-x:hidden;
+
+  padding:18px 16px 110px;
+  direction: rtl;
+  text-align: right;
+
+  scrollbar-width: none;
 }
-.screen *{ direction: rtl; }
-.screen.active{ display: block; }
+.screen::-webkit-scrollbar{ width:0; height:0; }
+.screen.active{ display:block; }
+.hidden{ display:none!important; }
 
-.screen::-webkit-scrollbar{ width: 2px; }
-.screen::-webkit-scrollbar-thumb{
-  background: rgba(43,46,70,0.15);
-  border-radius: 999px;
+/* Icons */
+.icon24{ width:24px; height:24px; }
+
+/* Splash/Auth background */
+.splash, .auth-screen{ padding:0; }
+.bg-full{
+  width:100%;
+  height:100%;
+  background: url("./assets/images/logo.png") center/cover no-repeat;
 }
-.screen::-webkit-scrollbar-track{ background: transparent; }
 
-.hidden{ display:none !important; }
+/* Auth buttons */
+.auth-actions{
+  position:absolute;
+  left:18px;
+  right:18px;
+  bottom:115px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
 
-/* Topbar */
+.auth-btn{
+  height:58px;
+  border-radius:999px;
+  font-size:18px;
+  font-weight:900;
+  cursor:pointer;
+  border:none;
+}
+
+.auth-btn.primary{
+  background:#c8bea1;
+  color:#ffffff;
+  box-shadow:0 10px 18px rgba(0,0,0,0.10);
+}
+.auth-btn.secondary{
+  background: rgba(255,255,255,0.65);
+  border:2px solid rgba(47,52,71,0.45);
+  color:#2f3447;
+}
+
+.guest-link{
+  margin-top:4px;
+  background:transparent;
+  border:none;
+  color: rgba(47,52,71,0.85);
+  font-weight:900;
+  font-size:14px;
+  cursor:pointer;
+  text-decoration: underline;
+}
+
+/* mini top */
+.mini-top.left{ display:flex; justify-content:flex-start; margin-bottom:10px; }
+.icon-btn{
+  width:44px; height:44px;
+  border-radius:16px;
+  border:none;
+  background:#fff;
+  box-shadow:0 6px 14px rgba(0,0,0,0.08);
+  cursor:pointer;
+  font-size:18px;
+}
+
+/* Auth forms */
+.auth-form{
+  background: linear-gradient(#cfd6e6, #eef1f6);
+}
+.auth-wrap{ text-align:center; padding: 10px 6px; }
+.auth-title{ margin:14px 0 6px; font-size:32px; color:#2f3447; font-weight:900; }
+.auth-sub{ margin:0 0 18px; color: rgba(47,52,71,0.70); font-weight:700; }
+
+.form{ display:flex; flex-direction:column; gap:14px; margin-top:10px; }
+.input{
+  width:100%;
+  height:54px;
+  border:none;
+  border-radius:999px;
+  padding:0 18px;
+  background:#fff;
+  font-size:15px;
+  outline:none;
+  text-align:right;
+}
+.btn-main{
+  width:100%;
+  height:54px;
+  border:none;
+  border-radius:999px;
+  background:#c8bea1;
+  color:#fff;
+  font-weight:900;
+  font-size:16px;
+  cursor:pointer;
+  box-shadow:0 8px 14px rgba(0,0,0,0.10);
+}
+.hint{ margin:10px 0 0; color: rgba(47,52,71,0.65); font-size:13px; font-weight:700; }
+
+/* Home topbar */
 .topbar{
+  width:100%;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom: 14px;
+  margin-bottom:10px;
 }
-
 .topbtn{
-  width: 70px;
-  height: 70px;
-  border: none;
-  border-radius: 18px;
-  background: #ffffff;
+  width:54px; height:54px;
+  border-radius:18px;
+  border:none;
+  background:#fff;
+  box-shadow:0 6px 14px rgba(0,0,0,0.08);
+  font-size:22px;
   display:flex;
   align-items:center;
   justify-content:center;
-  cursor: pointer;
-  position: relative;
-}
-.topbtn.dark{ background: #2b2e46; }
-
-.topsvg{ width: 36px; height: 36px; color: #2b2e46; }
-.topbtn.dark .topsvg{ color: #ffffff; }
-
-.dot{
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #a7d64b;
+  color:#2f3447;
 }
 
-/* كرت الصلاة */
-.prayer-card{
-  width: 344px;
-  min-height: 129px;
-  max-width: 100%;
-  margin: 0 auto 14px;
-  border-radius: 28px;
-  border: 1px solid #333652;
-  background: rgba(51, 54, 82, 0.62);
-  color: #fff;
-  padding: 12px 14px;
-  box-sizing: border-box;
-}
-
-.prayer-date{
-  text-align: center;
-  font-weight: 600;
-  margin-bottom: 8px;
-  font-size: 14px;
-}
-
-.prayer-row{
-  display: flex;
-  justify-content: space-between;
-  text-align: center;
-  gap: 6px;
-  align-items: flex-start;
-}
-
-.pitem{ width: 52px; line-height: 1.1; font-size: 13px; }
-.picon{ margin: 6px 0; font-size: 26px; line-height: 1; }
-.pitem span{ display:block; font-weight: 600; font-size: 13px; opacity: 0.95; }
-
-.prayer-remaining{
-  text-align: center;
-  margin-top: 8px;
-  font-size: 13px;
-  opacity: 0.95;
-}
-
-/* خريطة الرئيسية */
-.map-card{
-  width: 345px;
-  height: 161px;
-  max-width: 100%;
-  margin: 0 auto 14px;
-  border-radius: 19px;
-  border: 1px solid #333652;
-  overflow: hidden;
-  cursor: pointer;
-  position: relative;
-  background: #fff;
-}
-.realmap iframe{ width: 100%; height: 100%; border: 0; display: block; }
-.map-clicklayer{ position: absolute; inset: 0; background: transparent; cursor: pointer; }
-
-/* الخدمات */
-.services-grid{
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-top: 4px;
-}
-
-.service{
-  border: none;
-  background: #2b2e46;
-  border-radius: 18px;
-  padding: 12px 10px;
-  cursor: pointer;
-  color: #fff;
-  text-align: center;
-}
-
-.circle{
-  width: 54px;
-  height: 54px;
-  background: #fff;
-  border-radius: 50%;
-  margin: 0 auto 8px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-.fallback{ color: #2b2e46; font-weight: 700; font-size: 18px; }
-.label2{ font-size: 12px; line-height: 1.2; }
-
-/* Nav */
-.nav{
-  position: absolute;
-  bottom: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 24px);
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  justify-content: space-between;
-  background: #c9bea3;
-  border-radius: 22px;
-  padding: 14px;
-  box-sizing: border-box;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.20);
-}
-
-.navbtn{
-  width: 84px;
-  height: 64px;
-  border: 2px solid rgba(43,46,70,0.25);
-  border-radius: 18px;
-  background: #ffffff;
-  cursor: pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.navbtn.home{ background: rgba(43,46,70,0.35); }
-.navicon{ font-size: 40px; line-height: 1; color: #2b2e46; }
-
-/* صفحة دورات المياه */
-.mini-top{ margin: 6px 0 12px; }
-.mini-top.left{ display:flex; justify-content:flex-start; }
-
-.icon-btn{
-  width: 44px;
-  height: 44px;
-  border: none;
-  background: transparent;
-  font-size: 22px;
-  color: #2b2e46;
-  cursor: pointer;
-}
-
-.service-title-card{
+/* Welcome */
+.welcome{
   width: 100%;
-  max-width: 345px;
-  margin: 0 auto 14px;
-  background: #2b2e46;
-  border-radius: 18px;
-  padding: 14px 14px;
-  box-sizing: border-box;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap: 10px;
-}
-
-.service-icon-circle{
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: #ffffff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size: 26px;
-}
-.service-title-text{ color: #fff; font-size: 20px; font-weight: 700; }
-
-.choose-text{
-  text-align:center;
-  color:#2b2e46;
+  text-align: center;
+  margin: 6px 0 14px;
+  font-weight: 900;
+  color: #2f3447;
   font-size: 18px;
-  margin: 6px 0 10px;
+  direction: rtl;
 }
 
-.gender-row{
-  display:flex;
-  gap: 14px;
-  justify-content: center;
-  margin-bottom: 14px;
+/* Prayer card */
+.prayer-card{
+  width:100%;
+  background:#7b7f94;
+  color:#fff;
+  border-radius:26px;
+  padding:16px 14px;
+  margin-bottom:14px;
+  overflow:hidden;
 }
-.gender-btn{
-  width: 160px;
-  height: 72px;
-  border-radius: 18px;
-  border: 1px solid rgba(51,54,82,0.55);
-  background: rgba(51,54,82,0.18);
-  color: #2b2e46;
-  font-size: 22px;
-  cursor: pointer;
+.prayer-date{ text-align:center; font-weight:900; font-size:18px; margin-bottom:12px; }
+.prayer-row{
+  display:grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap:8px;
+  text-align:center;
+  align-items:start;
+}
+.pitem{ font-size:14px; min-width:0; }
+.picon{ font-size:22px; margin:6px 0; }
+.pitem span{ display:block; font-weight:900; font-size:16px; }
+.prayer-remaining{ text-align:center; margin-top:10px; font-weight:900; }
+
+/* Map */
+.map-card{
+  height:210px;
+  width:100%;
+  border-radius:22px;
+  overflow:hidden;
+  margin-bottom:14px;
+  position:relative;
+}
+.map-card iframe{ width:100%; height:100%; border:none; }
+.map-clicklayer{ position:absolute; inset:0; background:transparent; }
+
+/* Services */
+.services-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; }
+.service{
+  background:#2f3447;
+  border:none;
+  border-radius:22px;
+  padding:14px 10px;
+  color:#fff;
+  cursor:pointer;
+  min-height:110px;
+}
+.circle{
+  width:56px; height:56px;
+  border-radius:50%;
+  background:#fff;
+  margin:0 auto 10px;
   display:flex;
   align-items:center;
   justify-content:center;
-  gap: 10px;
+  font-size:22px;
+  color:#2f3447;
 }
-.gender-btn.active{
-  background: rgba(51,54,82,0.42);
-  font-weight: 700;
-}
-.gicon{ font-size: 24px; line-height: 1; }
+.label2{ text-align:center; font-size:13px; line-height:1.3; }
 
-.mosque3d-wrap{
-  display:flex;
-  justify-content:center;
-  margin: 6px 0 12px;
-  min-height: 220px;
+/* Restrooms + Wudu Shared */
+.service-title-card{
+  display:flex; gap:10px; align-items:center;
+  background:#fff; padding:14px; border-radius:22px; margin-bottom:12px;
 }
-.mosque3d{ width: 320px; height: auto; object-fit: contain; }
+.service-icon-circle{
+  width:46px; height:46px; border-radius:16px;
+  background:#2f3447; display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:20px;
+}
+.service-title-text{ font-weight:900; color:#1f2333; }
+.choose-text{ margin:10px 2px 8px; font-weight:900; color:#1f2333; }
 
-.placeholder{
-  width: 320px;
-  border: 1px dashed rgba(43,46,70,0.35);
-  border-radius: 18px;
-  padding: 18px 12px;
-  text-align: center;
-  color: rgba(43,46,70,0.75);
-  background: rgba(255,255,255,0.55);
-  font-size: 14px;
-  align-self: center;
+.gender-row{ display:flex; gap:12px; margin-bottom:12px; }
+.gender-btn{
+  flex:1; height:52px; border-radius:18px; border:none;
+  background:#2f3447; color:#fff; font-weight:900; cursor:pointer;
 }
+.gender-btn.active{ background:#1f2333; }
 
-/* قائمة دورات المياه */
-.list-wrap{
-  width: 100%;
-  max-width: 345px;
-  margin: 0 auto 12px;
-}
+.mosque3d-wrap{ text-align:center; margin:10px 0 12px; }
+.mosque3d{ width:100%; max-width:360px; border-radius:18px; }
+.placeholder{ background:#fff; border-radius:18px; padding:18px 12px; color:#555; }
 
-.list-title{
-  color: #2b2e46;
-  font-weight: 700;
-  margin: 6px 0 8px;
-}
-
-.restroom-list{
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+.list-wrap{ background:#fff; border-radius:22px; padding:12px; margin-bottom:12px; }
+.list-title{ font-weight:900; margin-bottom:10px; color:#1f2333; }
 
 .restroom-item{
-  width: 100%;
-  border: 1px solid rgba(51,54,82,0.25);
-  background: rgba(255,255,255,0.75);
-  border-radius: 16px;
-  padding: 12px 12px;
-  box-sizing: border-box;
-  cursor: pointer;
-
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 10px;
+  width:100%; border:none; border-radius:18px; padding:14px;
+  margin-bottom:10px; background:#f6f7fb;
+  display:flex; justify-content:space-between; align-items:center; cursor:pointer;
 }
+.rr-right{ display:flex; gap:10px; align-items:center; }
+.rr-icon{ font-size:22px; }
+.rr-name{ font-weight:900; color:#1f2333; }
+.rr-sub{ font-size:12px; color:#666; }
+.rr-distance{ font-weight:900; color:#2f3447; }
 
-.rr-right{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-}
-
-.rr-icon{
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: rgba(43,46,70,0.10);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size: 20px;
-}
-
-.rr-name{
-  font-weight: 700;
-  color: #2b2e46;
-  font-size: 14px;
-}
-
-.rr-sub{
-  color: rgba(43,46,70,0.70);
-  font-size: 12px;
-  margin-top: 2px;
-}
-
-.rr-distance{
-  background: rgba(31,122,91,0.12);
-  color: #1f7a5b;
-  border: 1px solid rgba(31,122,91,0.25);
-  padding: 8px 10px;
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-/* واجهة ابدأ التوجيه */
-.bottom-panel{
-  width: 100%;
-  max-width: 345px;
-  margin: 0 auto;
-  background: rgba(201,190,163,0.95);
-  border-radius: 22px;
-  padding: 12px;
-  box-sizing: border-box;
-}
-
-.route-header{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.route-title{
-  font-weight: 800;
-  color: #2b2e46;
-}
-
-.route-sub{
-  color: rgba(43,46,70,0.75);
-  font-size: 12px;
-  text-align: left;
-  direction: ltr;
-}
-
-.route-map{
-  width: 100%;
-  height: 170px;
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid rgba(51,54,82,0.35);
-  background: #ddd;
-}
-.route-map-img{
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display:block;
-}
-
+.bottom-panel{ background:#fff; border-radius:22px; padding:14px; }
+.route-title{ font-weight:900; color:#1f2333; }
+.route-sub{ margin-top:6px; color:#666; font-size:13px; }
+.route-map{ height:140px; border-radius:16px; overflow:hidden; background:#e3e6ef; margin:10px 0; }
+.route-map-img{ width:100%; height:100%; object-fit:cover; }
 .start-btn{
-  width: 100%;
-  height: 56px;
-  margin-top: 12px;
-  border: none;
-  border-radius: 18px;
-  background: #3ea86a;
-  color: #fff;
-  font-size: 20px;
-  font-weight: 700;
-  cursor: pointer;
+  width:100%; height:52px; border:none; border-radius:18px;
+  background:#2f3447; color:#fff; font-weight:900; font-size:16px; cursor:pointer;
 }
 
-/* =========================
-   ✅ QR Screen
-========================= */
-.qr-wrap{
-  width: 100%;
-  max-width: 345px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.qr-text{
-  margin: 12px 0 10px;
-  color: rgba(43,46,70,0.85);
-  font-size: 14px;
-}
-.qr-text.top{ margin-top: 2px; }
-
+/* QR */
+.qr-title{ text-align:center; margin:18px 0 12px; color: rgba(43,46,70,0.85); font-size:15px; font-weight:900; }
 .qr-box{
-  width: 100%;
-  height: 330px;
-  border-radius: 22px;
-  overflow: hidden;
-  background: rgba(43,46,70,0.12);
-  position: relative;
-  border: 1px solid rgba(51,54,82,0.25);
+  width:345px; height:360px; max-width:100%;
+  margin:0 auto 14px; border-radius:26px;
+  border:3px solid rgba(51,54,82,0.55);
+  background: rgba(0,0,0,0.08);
+  position:relative; overflow:hidden; cursor:pointer;
 }
-
-.qr-box video{
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display:block;
-}
-
-.qr-frame{
-  position: absolute;
-  inset: 22px;
-  border-radius: 18px;
-  border: 3px solid rgba(43,46,70,0.35);
-  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.35);
-}
-
-.qr-actions{
-  display:flex;
-  justify-content:center;
-  gap: 14px;
-  margin-top: 14px;
-}
-.qr-actions.one{ gap: 0; }
-
-.qr-btn{
-  width: 86px;
-  height: 58px;
-  border-radius: 16px;
-  border: 1px solid rgba(51,54,82,0.25);
-  background: rgba(255,255,255,0.80);
-  cursor: pointer;
-  font-size: 26px;
-}
-.qr-btn.active{
-  background: rgba(51,54,82,0.18);
-  border-color: rgba(51,54,82,0.35);
+#qrVideo{ width:100%; height:100%; object-fit:cover; display:none; background:#cfd3db; }
+.qr-corners{ position:absolute; inset:18px; border-radius:18px; border:2px solid rgba(255,255,255,0.30); pointer-events:none; }
+.qr-tap{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color: rgba(43,46,70,0.85); font-weight:900; background: rgba(255,255,255,0.35);
 }
 
 .qr-clear{
-  margin-top: 14px;
+  width:140px; height:50px; margin:0 auto; display:block;
+  border:none; border-radius:18px;
+  background:#e9f3ef; color:#1f7a5b; font-weight:900; cursor:pointer;
+}
+
+/* Bottom nav */
+.nav{
+  position:absolute; left:0; right:0; bottom:0;
+  height:86px; background: rgba(200,190,161,0.95);
+  display:flex; justify-content:space-around; align-items:center;
+}
+.navbtn{
+  width:64px; height:64px;
+  border-radius:22px;
+  border:none;
+  background:#fff;
+  cursor:pointer;
+  box-shadow:0 6px 14px rgba(0,0,0,0.08);
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#2f3447;
+}
+.navicon{
+  font-size:30px;
+  line-height:1;
+}
+.navbtn.active{
+  background:#b8b09a;
+  color:#fff;
+}
+
+/* hide nav until login */
+.nav.is-hidden{ display:none; }
+
+.crowd-card{
   width: 100%;
-  height: 54px;
-  border-radius: 18px;
-  border: 1px solid rgba(51,54,82,0.25);
-  background: rgba(255,255,255,0.80);
+  height: 220px;
+  border-radius: 22px;
+  overflow: hidden;
+  margin: 12px 0 16px;
+  background: #eee;
+}
+.crowd-img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* زر الرجوع في شاشة QR يكون يسار */
+#qr .mini-top{
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: auto;
+}
+
+/* ✅ حل تداخل زر الرجوع في QR + Restrooms */
+#qr .mini-top,
+#restrooms .mini-top{
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: auto;
+  z-index: 80;
+}
+
+#qr .icon-btn,
+#restrooms .icon-btn{
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: #2f3447;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
   cursor: pointer;
-  font-size: 16px;
-  color: #2b2e46;
+}
+
+#qr .icon-btn svg,
+#restrooms .icon-btn svg{
+  width: 18px;
+  height: 18px;
+  fill: #ffffff;
+}
+
+/* =========================
+   ✅ WUDU FINAL VISIBILITY FIX
+   (إضافة فقط — بدون حذف)
+========================= */
+#wudu{ display:none !important; }
+#wudu.active{ display:block !important; }
+ /* =========================
+   FIX WUDU BACK BUTTON (FINAL)
+   Paste at END of style.css
+========================= */
+
+/* زر الرجوع يسار وفوق كل شيء */
+#wudu .mini-top{
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: auto;
+  z-index: 999;
+}
+
+/* شكل زر الرجوع: صغير + كحلي */
+#wudu .icon-btn{
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: #2f3447;     /* كحلي */
+  color: #ffffff;          /* السهم أبيض */
+  border: none;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* نزّل كرت العنوان تحت عشان ما يدخل عليه زر الرجوع */
+#wudu .service-title-card{
+  margin-top: 78px;
+}
+/* =========================
+   FINAL UI FIX
+   WUDU + RESTROOMS
+   Paste at END of style.css
+========================= */
+
+/* 1) كرت العنوان — لون بيج فاتح */
+#wudu .service-title-card,
+#restrooms .service-title-card{
+  background: #f3efe4;          /* بيج فاتح */
+  border-radius: 24px;
+  padding: 18px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;      /* توسيط المحتوى */
+  gap: 0;                       /* بدون فراغ للأيقونة */
+}
+
+/* 2) إخفاء أيقونة العنوان (الرموز) */
+#wudu .service-icon-circle,
+#restrooms .service-icon-circle{
+  display: none !important;
+}
+
+/* 3) نص العنوان في المنتصف */
+#wudu .service-title-text,
+#restrooms .service-title-text{
+  text-align: center;
+  font-weight: 900;
+  font-size: 18px;
+  color: #2f3447;               /* نفس اللون السابق */
+  margin: 0 auto;
+}
+
+/* 4) كلمة (اختر) في النص */
+#wudu .choose-text,
+#restrooms .choose-text{
+  text-align: center;
+  font-weight: 900;
+  color: #2f3447;
+  margin: 14px 0 16px;
+}
+
+/* 5) نزّل الكرت شوي عشان زر الرجوع */
+#wudu .service-title-card,
+#restrooms .service-title-card{
+  margin-top: 78px;
+}
+/* =========================================
+   UNIFIED STYLE — WUDU & RESTROOMS
+========================================= */
+
+/* 1️⃣ زر الرجوع — صغير، كحلي، يسار */
+#wudu .mini-top,
+#restrooms .mini-top{
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: auto;
+  z-index: 50;
+}
+
+#wudu .icon-btn,
+#restrooms .icon-btn{
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #2f3447;      /* كحلي */
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 2️⃣ كرت العنوان — بيج فاتح + بالنص */
+#wudu .service-title-card,
+#restrooms .service-title-card{
+  background: #f3efdf;      /* بيج */
+  justify-content: center;
+  margin-top: 70px;
+}
+
+/* إخفاء أيقونة العنوان */
+#wudu .service-icon-circle,
+#restrooms .service-icon-circle{
+  display: none !important;
+}
+
+/* نص العنوان */
+#wudu .service-title-text,
+#restrooms .service-title-text{
+  font-weight: 900;
+  font-size: 18px;
+  color: #1f2333;
+  text-align: center;
+}
+
+/* 3️⃣ كلمة "اختر :" في المنتصف */
+#wudu .choose-text,
+#restrooms .choose-text{
+  text-align: center;
+  font-weight: 900;
+  margin: 14px 0;
+  color: #1f2333;
+}
+
+/* 4️⃣ كرت الشرح (اختاري رجال/نساء…) — بيج */
+#wudu .placeholder,
+#restrooms .placeholder{
+  background: #f3efdf;
+  color: #1f2333;
   font-weight: 700;
 }
 
-.qr-msg{
-  margin-top: 12px;
-  color: rgba(43,46,70,0.85);
-  font-size: 13px;
-  min-height: 18px;
+/* 5️⃣ كرت "أقرب دورات المياه / مرافق الوضوء" — بيج */
+#wudu .list-wrap,
+#restrooms .list-wrap{
+  background: #f3efdf;
+}
+
+/* عنوان القائمة */
+#wudu .list-title,
+#restrooms .list-title{
+  text-align: center;
+  font-weight: 900;
+  color: #1f2333;
+}
+
+/* العناصر داخل القائمة (تظل فاتحة شوي) */
+#wudu .restroom-item,
+#restrooms .restroom-item{
+  background: #f8f6ee;
+}
+/* =========================================
+   ROUTE MAP CARD — BEIGE STYLE
+========================================= */
+
+/* كرت خريطة المسار كامل */
+#wudu .bottom-panel,
+#restrooms .bottom-panel{
+  background: #f3efdf;          /* نفس البيج */
+  border-radius: 22px;
+}
+
+/* عنوان "خريطة المسار" */
+#wudu .route-title,
+#restrooms .route-title{
+  text-align: center;
+  font-weight: 900;
+  color: #1f2333;
+}
+
+/* النص تحت العنوان */
+#wudu .route-sub,
+#restrooms .route-sub{
+  text-align: center;
+  color: #555;
+  font-weight: 700;
+}
+
+/* إطار الصورة نفسه (يظل فاتح) */
+#wudu .route-map,
+#restrooms .route-map{
+  background: #eae6d6;          /* بيج أغمق شوي */
+  border-radius: 18px;
+}
+
+/* زر ابدأ التوجيه (نخليه كحلي عشان يبرز) */
+#wudu .start-btn,
+#restrooms .start-btn{
+  background: #2f3447;
+  color: #ffffff;
+  font-weight: 900;
+}
+/* =========================================
+   ENLARGE ROUTE MAP IMAGE
+========================================= */
+
+/* تكبير مساحة الخريطة */
+#wudu .route-map,
+#restrooms .route-map{
+  height: 320px;          /* ⬅️ كبّريها (جربي 300–360 لو حبيتي) */
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+/* جعل الصورة تملأ الكرت بالكامل */
+#wudu .route-map-img,
+#restrooms .route-map-img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;      /* تغطية كاملة وواضحة */
+}
+/* =========================
+   QIBLA SCREEN
+========================= */
+.qibla-title-card{
+  background:#cdbf9d;   /* بيج */
+  justify-content:center;
+}
+
+.qibla-wrap{
+  margin-top: 22px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+}
+
+.qibla-compass{
+  position:relative;
+  width:260px;
+  height:260px;
+}
+
+.qibla-ring{
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  border:4px solid rgba(205,191,157,0.9);
+  background:rgba(255,255,255,0.35);
+}
+
+.qibla-needle{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:0;
+  height:0;
+  transform: translate(-50%,-50%) rotate(0deg);
+  transform-origin: 50% 70%;
+  border-left:18px solid transparent;
+  border-right:18px solid transparent;
+  border-bottom:52px solid #2f3447; /* كحلي */
+}
+
+.qibla-kaaba{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform: translate(-50%,-50%);
+  font-size:34px;
+}
+
+.qibla-deg{
+  font-size:30px;
+  font-weight:900;
+  color:#2f3447;
+}
+
+.qibla-action{
+  width:220px;
+  height:52px;
+  border:none;
+  border-radius:14px;
+  background:#cdbf9d;
+  color:#2f3447;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 10px 18px rgba(0,0,0,0.10);
+}
+
+.qibla-hint{
+  color: rgba(47,52,71,0.75);
+  font-weight:700;
+  font-size:13px;
+  text-align:center;
+  max-width: 320px;
+}
+/* =========================
+   QIBLA SCREEN – FIX UI
+========================= */
+
+/* زر الرجوع: يسار + كحلي (مثل restrooms/wudu) */
+#qibla .mini-top{
+  position:absolute;
+  top:16px;
+  left:16px;
+  right:auto;
+  z-index:80;
+}
+#qibla .icon-btn{
+  width:42px;
+  height:42px;
+  border-radius:14px;
+  background:#2f3447;
+  color:#fff;
+  border:none;
+  box-shadow:0 6px 14px rgba(0,0,0,0.18);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  cursor:pointer;
+}
+
+/* كرت العنوان بيج */
+#qibla .qibla-title-card{
+  background:#cdbf9d;
+  justify-content:center;
+  margin-top:68px; /* عشان ما يتداخل مع زر الرجوع */
+}
+
+/* المحتوى */
+#qibla .qibla-wrap{
+  margin-top: 18px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+}
+
+#qibla .qibla-compass{
+  position:relative;
+  width:280px;
+  height:280px;
+}
+
+#qibla .qibla-ring{
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  border:5px solid rgba(205,191,157,0.9);
+  background:rgba(255,255,255,0.35);
+}
+
+#qibla .qibla-needle{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:0;
+  height:0;
+  transform: translate(-50%,-50%) rotate(0deg);
+  transform-origin: 50% 70%;
+  border-left:18px solid transparent;
+  border-right:18px solid transparent;
+  border-bottom:56px solid #2f3447; /* كحلي */
+  z-index:5;
+}
+
+#qibla .qibla-kaaba{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform: translate(-50%,-50%);
+  font-size:34px;
+  z-index:4;
+}
+
+#qibla .qibla-deg{
+  font-size:30px;
+  font-weight:900;
+  color:#2f3447;
+}
+
+#qibla .qibla-action{
+  width:240px;
+  height:54px;
+  border:none;
+  border-radius:16px;
+  background:#cdbf9d;
+  color:#2f3447;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 10px 18px rgba(0,0,0,0.10);
+}
+
+#qibla .qibla-hint{
+  color: rgba(47,52,71,0.75);
+  font-weight:700;
+  font-size:13px;
+  text-align:center;
+  max-width: 320px;
+}
+
+/* حروف الاتجاهات */
+#qibla .qibla-dir{
+  position:absolute;
+  font-weight:900;
+  color:#2f3447;
+  background: rgba(255,255,255,0.7);
+  padding:4px 8px;
+  border-radius:12px;
+  font-size:12px;
+  z-index:6;
+}
+
+#qibla .qibla-dir.n{ top:10px; left:50%; transform:translateX(-50%); }
+#qibla .qibla-dir.s{ bottom:10px; left:50%; transform:translateX(-50%); }
+#qibla .qibla-dir.e{ right:10px; top:50%; transform:translateY(-50%); }
+#qibla .qibla-dir.w{ left:10px; top:50%; transform:translateY(-50%); }
+
+#qibla .qibla-dir.ne{ top:34px; right:34px; }
+#qibla .qibla-dir.nw{ top:34px; left:34px; }
+#qibla .qibla-dir.se{ bottom:34px; right:34px; }
+#qibla .qibla-dir.sw{ bottom:34px; left:34px; }
+/* =========================
+   QIBLA ARROW – SMALL & BELOW KAABA
+========================= */
+
+/* صغر السهم */
+#qibla .qibla-needle{
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 32px solid #2f3447; /* كحلي */
+  
+  /* خليه تحت الكعبة */
+  top: 58%;                 /* ⬅️ نزّل السهم */
+  transform-origin: 50% 90%;
+}
+
+/* الكعبة فوق السهم شوي */
+#qibla .qibla-kaaba{
+  top: 48%;                 /* ⬅️ فوق السهم */
+  font-size: 32px;          /* لو تبينها أكبر/أصغر عدّلي هنا */
 }
