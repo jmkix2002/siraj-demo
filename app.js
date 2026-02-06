@@ -605,4 +605,253 @@ function fakeScanOnce(){
   if (!qrStream) return;
   setTimeout(()=>{
     if (!qrStream) return;
-    if
+    if (qrResult && qrResultText){
+      qrResultText.textContent = "DEMO-QR-12345";
+      qrResult.classList.remove("hidden");
+    }
+  }, 2000);
+}
+
+/* =========================
+   QIBLA (FIXED — STABLE + NO DOUBLE + NO SPLIT TEXT)
+========================= */
+const qiblaEnableBtn = document.getElementById("qiblaEnableBtn");
+const qiblaNeedle    = document.getElementById("qiblaNeedle");
+const qiblaDeg       = document.getElementById("qiblaDeg");
+const qiblaHint      = document.getElementById("qiblaHint");
+const qiblaDegNum    = document.getElementById("qiblaDegNum");
+
+// إحداثيات الكعبة
+const KAABA = { lat: 21.422487, lon: 39.826206 };
+
+let qiblaBearing = null;   // 0..360
+let heading = null;        // 0..360 (بعد الفلترة)
+let didBuzz = false;
+let qiblaListening = false;
+
+// الوصول للقبلة ±7 درجات (أكثر ثبات)
+const DEG_THRESHOLD = 7;
+
+// تثبيت/فلترة القراءة
+let smoothHeading = null;
+const SMOOTH_ALPHA = 0.06;  // أثبت
+const JITTER_DEG = 3.0;     // تجاهل تغيّر أقل من 3 درجات
+
+// ثبات الاهتزاز: لازم يثبت داخل العتبة 1 ثانية
+let inRangeSince = null;
+const BUZZ_HOLD_MS = 1000;
+const RESET_EXTRA_DEG = 3;
+
+// تقليل عدد التحديثات (Throttle)
+let lastUpdateTs = 0;
+const ORIENT_THROTTLE_MS = 80;
+
+function toRad(d){ return d * Math.PI / 180; }
+function toDeg(r){ return r * 180 / Math.PI; }
+function norm360(a){
+  a = a % 360;
+  if (a < 0) a += 360;
+  return a;
+}
+function angleDiff(a, b){
+  let d = norm360(a) - norm360(b);
+  if (d > 180) d -= 360;
+  if (d < -180) d += 360;
+  return d;
+}
+function smallAngleDelta(a, b){
+  return Math.abs(angleDiff(a, b));
+}
+function smoothAngle(prev, next, alpha){
+  if (prev == null) return next;
+  const d = angleDiff(next, prev);
+  return norm360(prev + d * alpha);
+}
+
+function calcBearing(lat1, lon1, lat2, lon2){
+  const φ1 = toRad(lat1);
+  const φ2 = toRad(lat2);
+  const Δλ = toRad(lon2 - lon1);
+
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x = Math.cos(φ1)*Math.sin(φ2) - Math.sin(φ1)*Math.cos(φ2)*Math.cos(Δλ);
+
+  return norm360(toDeg(Math.atan2(y, x)));
+}
+
+function updateQiblaUI(){
+  if (!qiblaNeedle) return;
+
+  if (qiblaBearing == null || heading == null){
+    if (qiblaDegNum) qiblaDegNum.textContent = "--";
+    return;
+  }
+
+  const rotate = angleDiff(qiblaBearing, heading);
+
+  // ✅ مهم: transform كامل عشان ما ينكسر translate
+  qiblaNeedle.style.transform = `translate(-50%,-50%) rotate(${rotate}deg)`;
+
+  const err = Math.abs(rotate);
+
+  // ✅ عرض رقم واحد فقط (بدون انقسام RTL)
+  if (qiblaDegNum) qiblaDegNum.textContent = String(Math.round(err));
+
+  // اهتزاز مضبوط: بعد ثبات 1 ثانية + لا يعيد الاهتزاز إلا إذا خرج بعيد
+  const nowTs = Date.now();
+
+  if (err <= DEG_THRESHOLD){
+    if (inRangeSince == null) inRangeSince = nowTs;
+
+    if (!didBuzz && (nowTs - inRangeSince) >= BUZZ_HOLD_MS){
+      didBuzz = true;
+      if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
+      if (qiblaHint) qiblaHint.textContent = "✅ تم ضبط اتجاه القبلة";
+    }
+  } else {
+    inRangeSince = null;
+
+    if (didBuzz && err > (DEG_THRESHOLD + RESET_EXTRA_DEG)){
+      didBuzz = false;
+    }
+    if (qiblaHint) qiblaHint.textContent = "حرّكي الجوال حتى تقل الزاوية";
+  }
+}
+
+function requestLocationForQibla(){
+  return new Promise((resolve, reject)=>{
+    if (!navigator.geolocation) return reject(new Error("NO_GEO"));
+
+    navigator.geolocation.getCurrentPosition(
+      (pos)=>{
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+
+        qiblaBearing = calcBearing(lat, lon, KAABA.lat, KAABA.lon);
+        resolve(true);
+      },
+      ()=>reject(new Error("GEO_DENIED")),
+      { enableHighAccuracy:true, timeout: 12000, maximumAge:0 }
+    );
+  });
+}
+
+function getHeadingFromEvent(evt){
+  // iOS Safari
+  if (typeof evt.webkitCompassHeading === "number" && !Number.isNaN(evt.webkitCompassHeading)){
+    return norm360(evt.webkitCompassHeading);
+  }
+
+  // Android/Chrome
+  if (typeof evt.alpha === "number" && !Number.isNaN(evt.alpha)){
+    return norm360(360 - evt.alpha);
+  }
+
+  return null;
+}
+
+function onOrientation(evt){
+  const raw = getHeadingFromEvent(evt);
+  if (raw == null) return;
+
+  const now = performance.now();
+  if (now - lastUpdateTs < ORIENT_THROTTLE_MS) return;
+  lastUpdateTs = now;
+
+  if (heading != null && smallAngleDelta(raw, heading) < JITTER_DEG) return;
+
+  smoothHeading = smoothAngle(smoothHeading, raw, SMOOTH_ALPHA);
+  heading = smoothHeading;
+
+  updateQiblaUI();
+}
+
+function startQiblaListeners(){
+  if (qiblaListening) return;
+
+  window.addEventListener("deviceorientationabsolute", onOrientation, true);
+
+  // fallback إذا ما أعطى absolute قراءة
+  setTimeout(() => {
+    if (!qiblaListening) return;
+    if (heading == null){
+      window.removeEventListener("deviceorientationabsolute", onOrientation, true);
+      window.addEventListener("deviceorientation", onOrientation, true);
+    }
+  }, 1200);
+
+  qiblaListening = true;
+}
+
+function stopQibla(){
+  if (qiblaListening){
+    window.removeEventListener("deviceorientationabsolute", onOrientation, true);
+    window.removeEventListener("deviceorientation", onOrientation, true);
+    qiblaListening = false;
+  }
+  heading = null;
+  smoothHeading = null;
+  didBuzz = false;
+  inRangeSince = null;
+  updateQiblaUI();
+}
+
+async function enableQiblaByButton(){
+  try{
+    didBuzz = false;
+    heading = null;
+    smoothHeading = null;
+    inRangeSince = null;
+
+    if (!window.isSecureContext){
+      if (qiblaHint) qiblaHint.textContent = "❌ لازم HTTPS أو localhost عشان البوصلة تشتغل";
+      return;
+    }
+
+    if (qiblaHint) qiblaHint.textContent = "جاري طلب إذن الموقع...";
+
+    await requestLocationForQibla();
+
+    // iOS: لازم إذن Motion من زر
+    if (typeof DeviceOrientationEvent !== "undefined" &&
+        typeof DeviceOrientationEvent.requestPermission === "function"){
+      if (qiblaHint) qiblaHint.textContent = "جاري طلب إذن البوصلة...";
+      const res = await DeviceOrientationEvent.requestPermission();
+      if (res !== "granted"){
+        if (qiblaHint) qiblaHint.textContent = "❌ تم رفض إذن البوصلة";
+        return;
+      }
+    }
+
+    startQiblaListeners();
+
+    if (qiblaHint) qiblaHint.textContent = "✅ تم التفعيل، حرّكي الجوال";
+    updateQiblaUI();
+  } catch(e){
+    if (qiblaHint){
+      if (String(e?.message).includes("GEO_DENIED")){
+        qiblaHint.textContent = "❌ تم رفض إذن الموقع";
+      } else if (String(e?.message).includes("NO_GEO")){
+        qiblaHint.textContent = "❌ جهازك لا يدعم تحديد الموقع";
+      } else {
+        qiblaHint.textContent = "❌ تعذر التفعيل، جرّبي Safari/Chrome على الجوال";
+      }
+    }
+  }
+}
+
+if (qiblaEnableBtn){
+  qiblaEnableBtn.addEventListener("click", enableQiblaByButton);
+}
+
+function startQiblaAuto(){
+  stopQibla();
+  qiblaBearing = null;
+  heading = null;
+  smoothHeading = null;
+  didBuzz = false;
+  inRangeSince = null;
+
+  if (qiblaHint) qiblaHint.textContent = "اضغطي تفعيل واسمحي بالأذونات";
+  updateQiblaUI();
+}
