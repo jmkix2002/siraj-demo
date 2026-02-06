@@ -817,8 +817,7 @@ function renderQibla(){
   }
 
   if (qiblaAngle == null){
-    status.textContent = "📍 فعّلي الموقع لتحديد القبلة";
-    return;
+       return;
   }
   if (heading == null){
     status.textContent = "🧭 جاري تفعيل البوصلة... حرّكي الجوال بشكل رقم 8";
@@ -838,8 +837,7 @@ function renderQibla(){
 
   // وصلتي؟
   if (err <= DEG_THRESHOLD){
-    status.textContent = "✅ وصلتِ للقبلة";
-    if (kaaba) kaaba.classList.add("qibla-hit");
+        if (kaaba) kaaba.classList.add("qibla-hit");
 
     // هز مرة واحدة عند الوصول
     if (!didBuzz){
@@ -949,5 +947,6 @@ function initQiblaScreen(){
     }
   };
 })();
+
 
 
