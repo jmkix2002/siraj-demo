@@ -151,9 +151,8 @@
         </button>
 
         <button class="service" type="button" onclick="go('qibla')">
-  <div class="circle">🕋</div><div class="label2">اتجاه القبلة</div>
-</button>
-
+          <div class="circle">🕋</div><div class="label2">اتجاه القبلة</div>
+        </button>
 
         <button class="service" type="button" data-service="bus">
           <div class="circle">🚌</div><div class="label2">مواقف الباصات</div>
@@ -249,44 +248,44 @@
       </div>
     </section>
 
-<section id="qibla" class="screen">
-  <div class="mini-top left">
-    <button class="icon-btn" type="button" onclick="go('home')" aria-label="رجوع">←</button>
-  </div>
+    <!-- ===================== -->
+    <!-- QIBLA (تم تعديلها فقط) -->
+    <!-- ===================== -->
+    <section id="qibla" class="screen">
+      <div class="mini-top left">
+        <button class="icon-btn" type="button" onclick="go('home')" aria-label="رجوع">←</button>
+      </div>
 
-  <div class="service-title-card qibla-title-card">
-    <div class="service-title-text">اتجاه القبلة</div>
-  </div>
+      <div class="service-title-card qibla-title-card">
+        <div class="service-title-text">اتجاه القبلة</div>
+      </div>
 
-  <div class="qibla-wrap">
-    <div class="qibla-compass">
-      <div class="qibla-ring"></div>
+      <div class="qibla-wrap">
+        <div class="qibla-compass">
+          <div class="qibla-ring"></div>
 
-      <!-- الاتجاهات الأربع فقط -->
-      <div class="qibla-dir n">N</div>
-      <div class="qibla-dir e">E</div>
-      <div class="qibla-dir s">S</div>
-      <div class="qibla-dir w">W</div>
+          <div class="qibla-dir n">N</div>
+          <div class="qibla-dir e">E</div>
+          <div class="qibla-dir s">S</div>
+          <div class="qibla-dir w">W</div>
 
-      <!-- السهم -->
-      <div class="qibla-needle" id="qiblaNeedle"></div>
+          <div class="qibla-needle" id="qiblaNeedle"></div>
+          <div class="qibla-kaaba">🕋</div>
+        </div>
 
-      <!-- الكعبة -->
-      <div class="qibla-kaaba">🕋</div>
-    </div>
+        <!-- ✅ هنا التعديل: رقم منفصل + درجة منفصلة عشان ما يطلع رقمين -->
+        <div class="qibla-deg" id="qiblaDeg">
+          <span class="qibla-label">زاوية الانحراف عن القبلة:</span>
+          <span class="qibla-value"><span id="qiblaDegNum">--</span><span class="deg">°</span></span>
+        </div>
 
-    <div class="qibla-deg" id="qiblaDeg">--°</div>
+        <button class="qibla-action" id="qiblaEnableBtn" type="button">
+          تفعيل البوصلة والموقع
+        </button>
 
-    <!-- ✅ زر التفعيل -->
-    <button class="qibla-action" id="qiblaEnableBtn" type="button">
-      تفعيل البوصلة والموقع
-    </button>
-
-    <!-- رسالة حالة -->
-    <div class="qibla-hint" id="qiblaHint">اضغطي تفعيل واسمحي بالأذونات</div>
-  </div>
-</section>
-
+        <div class="qibla-hint" id="qiblaHint">اضغطي تفعيل واسمحي بالأذونات</div>
+      </div>
+    </section>
 
     <!-- ===================== -->
     <!-- QR -->
@@ -312,7 +311,7 @@
     </section>
 
     <!-- ===================== -->
-    <!-- Bottom nav (يظهر فقط بعد الدخول) -->
+    <!-- Bottom nav -->
     <!-- ===================== -->
     <nav class="nav is-hidden" id="bottomNav">
       <button class="navbtn" id="navMenu" type="button" onclick="toastNotAvailable()" aria-label="القائمة">
@@ -333,4 +332,3 @@
   <script src="./app.js"></script>
 </body>
 </html>
-
