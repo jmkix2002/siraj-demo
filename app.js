@@ -12,12 +12,8 @@ function go(screenId) {
   setActiveNav(screenId);
 
   // ✅ عشان الوضوء يرجع نظيف كل مرة زي دورات المياه
-  if (screenId === "wudu") {
-    resetWuduUI();
-  }
-  if (screenId === "restrooms") {
-    resetRestroomsUI();
-  }
+  if (screenId === "wudu") resetWuduUI();
+  if (screenId === "restrooms") resetRestroomsUI();
 
   // ✅ تشغيل القبلة تلقائي عند فتح الشاشة
   if (screenId === "qibla") {
@@ -748,14 +744,29 @@ async function enableQiblaAuto(){
   }
 }
 
-/* شغليها تلقائي أول ما تفتح صفحة القبلة */
-(function hookQiblaOnGo(){
-  const oldGo = window.go;
-  window.go = function(screenId){
-    oldGo(screenId);
-    if (screenId === "qibla"){
-      // تفعيل تلقائي عند فتح صفحة القبلة
-      enableQiblaAuto();
-    }
-  };
-})();
+/* =========================
+   Qibla AUTO start/stop (USED BY go())
+========================= */
+async function startQiblaAuto(){
+  didBuzz = false;
+  await enableQiblaAuto();
+}
+
+function stopQibla(){
+  if (qiblaListening){
+    window.removeEventListener("deviceorientationabsolute", onOrientation, true);
+    window.removeEventListener("deviceorientation", onOrientation, true);
+    qiblaListening = false;
+  }
+  heading = null;
+  // لا نغيّر qiblaBearing لأن الموقع ثابت
+}
+
+/* =========================
+   OPTIONAL: directions labels (N/E/S/W) in DOM
+   If you added them in HTML, they stay visible by CSS only
+========================= */
+
+/* NOTE:
+   ما نحتاج hookQiblaOnGo هنا لأن go() نفسه صار يستدعي startQiblaAuto()
+*/
