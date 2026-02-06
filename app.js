@@ -615,6 +615,10 @@ function fakeScanOnce(){
 /* =========================
    QIBLA (BUTTON ENABLE + VIBRATE)
 ========================= */
+/* =========================
+   QIBLA (BUTTON + STABLE + NO DOUBLE LISTENERS)
+   Replace your whole Qibla block with this
+========================= */
 const qiblaEnableBtn = document.getElementById("qiblaEnableBtn");
 const qiblaNeedle    = document.getElementById("qiblaNeedle");
 const qiblaDeg       = document.getElementById("qiblaDeg");
@@ -624,11 +628,17 @@ const qiblaHint      = document.getElementById("qiblaHint");
 const KAABA = { lat: 21.422487, lon: 39.826206 };
 
 let qiblaBearing = null;   // 0..360
-let heading = null;        // 0..360
+let heading = null;        // 0..360 (بعد الفلترة)
 let didBuzz = false;
 let qiblaListening = false;
 
-const DEG_THRESHOLD = 5;   // اهتزاز عند الوصول ±5 درجات
+// الوصول للقبلة ±5 درجات
+const DEG_THRESHOLD = 5;
+
+// تثبيت/فلترة الاهتزاز
+let smoothHeading = null;
+const SMOOTH_ALPHA = 0.15;  // 0.10 أثبت / 0.20 أسرع
+const JITTER_DEG = 1.0;     // تجاهل تغيّر أقل من 1 درجة
 
 function toRad(d){ return d * Math.PI / 180; }
 function toDeg(r){ return r * 180 / Math.PI; }
@@ -643,6 +653,14 @@ function angleDiff(a, b){
   if (d > 180) d -= 360;
   if (d < -180) d += 360;
   return d;
+}
+function smallAngleDelta(a, b){
+  return Math.abs(angleDiff(a, b)); // 0..180
+}
+function smoothAngle(prev, next, alpha){
+  if (prev == null) return next;
+  const d = angleDiff(next, prev);     // -180..180
+  return norm360(prev + d * alpha);
 }
 
 function calcBearing(lat1, lon1, lat2, lon2){
@@ -695,7 +713,6 @@ function requestLocationForQibla(){
         const lon = pos.coords.longitude;
 
         qiblaBearing = calcBearing(lat, lon, KAABA.lat, KAABA.lon);
-
         resolve(true);
       },
       ()=>reject(new Error("GEO_DENIED")),
@@ -719,18 +736,33 @@ function getHeadingFromEvent(evt){
 }
 
 function onOrientation(evt){
-  const h = getHeadingFromEvent(evt);
-  if (h == null) return;
-  heading = h;
+  const raw = getHeadingFromEvent(evt);
+  if (raw == null) return;
+
+  // تجاهل الاهتزازات الصغيرة
+  if (heading != null && smallAngleDelta(raw, heading) < JITTER_DEG) return;
+
+  // فلترة لتثبيت القراءة
+  smoothHeading = smoothAngle(smoothHeading, raw, SMOOTH_ALPHA);
+  heading = smoothHeading;
+
   updateQiblaUI();
 }
 
 function startQiblaListeners(){
   if (qiblaListening) return;
 
-  // نجرب الاثنين عشان أجهزة مختلفة
+  // ✅ Listener واحد فقط لتجنب اللخبطة
+  // نجرب absolute أول، وإذا ما وصلت قراءة خلال 1.2 ثانية نحول للعادي
   window.addEventListener("deviceorientationabsolute", onOrientation, true);
-  window.addEventListener("deviceorientation", onOrientation, true);
+
+  const fallbackTimer = setTimeout(() => {
+    if (!qiblaListening) return;
+    if (heading == null){
+      window.removeEventListener("deviceorientationabsolute", onOrientation, true);
+      window.addEventListener("deviceorientation", onOrientation, true);
+    }
+  }, 1200);
 
   qiblaListening = true;
 }
@@ -742,6 +774,7 @@ function stopQibla(){
     qiblaListening = false;
   }
   heading = null;
+  smoothHeading = null;
   didBuzz = false;
   updateQiblaUI();
 }
@@ -749,6 +782,8 @@ function stopQibla(){
 async function enableQiblaByButton(){
   try{
     didBuzz = false;
+    heading = null;
+    smoothHeading = null;
 
     if (!window.isSecureContext){
       if (qiblaHint) qiblaHint.textContent = "❌ لازم HTTPS أو localhost عشان البوصلة تشتغل";
@@ -792,12 +827,14 @@ if (qiblaEnableBtn){
   qiblaEnableBtn.addEventListener("click", enableQiblaByButton);
 }
 
-/* إذا تبين: عند دخول صفحة القبلة يصفّر النص */
+/* عند دخول صفحة القبلة يصفّر القيم */
 function startQiblaAuto(){
-  // ما نشغله تلقائي بدون زر (عشان iPhone)
-  if (qiblaHint) qiblaHint.textContent = "اضغطي تفعيل واسمحي بالأذونات";
+  stopQibla();
   qiblaBearing = null;
   heading = null;
+  smoothHeading = null;
   didBuzz = false;
+
+  if (qiblaHint) qiblaHint.textContent = "اضغطي تفعيل واسمحي بالأذونات";
   updateQiblaUI();
 }
