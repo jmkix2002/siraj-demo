@@ -734,7 +734,7 @@ async function enableQibla(){
 
     window.addEventListener("deviceorientation", handleOrientation, true);
 
-    qiblaHint && (qiblaHint.textContent = "حرّكي الجوال شوي لين تثبت البوصلة ✅");
+    qiblaHint && (qiblaHint.textContent = );
     updateQiblaUI();
   }catch(e){
     qiblaHint && (qiblaHint.textContent = "ما اشتغل: " + (e?.message || e));
@@ -947,6 +947,7 @@ function initQiblaScreen(){
     }
   };
 })();
+
 
 
 
