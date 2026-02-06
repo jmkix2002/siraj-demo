@@ -250,28 +250,45 @@
     </section>
 
 <section id="qibla" class="screen">
+
+  <!-- زر الرجوع -->
   <div class="mini-top left">
     <button class="icon-btn" type="button" onclick="go('home')" aria-label="رجوع">←</button>
   </div>
 
+  <!-- عنوان -->
   <div class="service-title-card qibla-title-card">
     <div class="service-title-text">اتجاه القبلة</div>
   </div>
 
+  <!-- المحتوى -->
   <div class="qibla-wrap">
+
     <div class="qibla-compass">
+
+      <!-- الإطار -->
       <div class="qibla-ring"></div>
-      <div class="qibla-needle" id="qiblaNeedle"></div>
-      <div class="qibla-kaaba">🕋</div>
+
+      <!-- اتجاهات البوصلة الرئيسية -->
+<div class="qibla-dir n">شمال</div>
+<div class="qibla-dir e">شرق</div>
+<div class="qibla-dir s">جنوب</div>
+<div class="qibla-dir w">غرب</div>
+
+
+      <!-- السهم -->
+      <div class="qibla-needle" id="qiblaArrow"></div>
+
+      <!-- الكعبة -->
+      <div class="qibla-kaaba" id="qiblaKaaba">🕋</div>
+
     </div>
 
-    <div class="qibla-deg" id="qiblaDeg">--°</div>
+    <!-- النص الوحيد المسموح -->
+    <div class="qibla-status">
+      زاوية الانحراف عن القبلة: <span id="qiblaErr">--</span>°
+    </div>
 
-    <button class="qibla-action" id="qiblaEnableBtn" type="button">
-      تفعيل البوصلة
-    </button>
-
-    <div class="qibla-hint" id="qiblaHint">اسمحي بالموقع والبوصلة ليظهر الاتجاه</div>
   </div>
 </section>
 
