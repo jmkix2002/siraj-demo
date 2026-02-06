@@ -613,21 +613,22 @@ function fakeScanOnce(){
 }
 
 /* =========================
-   QIBLA (AUTO + VIBRATE + ONLY DEVIATION TEXT)
+   QIBLA (BUTTON ENABLE + VIBRATE)
 ========================= */
-const qiblaNeedle = document.getElementById("qiblaNeedle");
-const qiblaDeg    = document.getElementById("qiblaDeg");
-const qiblaHint   = document.getElementById("qiblaHint");
+const qiblaEnableBtn = document.getElementById("qiblaEnableBtn");
+const qiblaNeedle    = document.getElementById("qiblaNeedle");
+const qiblaDeg       = document.getElementById("qiblaDeg");
+const qiblaHint      = document.getElementById("qiblaHint");
 
 // إحداثيات الكعبة
 const KAABA = { lat: 21.422487, lon: 39.826206 };
 
-let qiblaBearing = null;   // زاوية القبلة من الشمال الحقيقي 0..360
-let heading = null;        // اتجاه الجهاز 0..360
+let qiblaBearing = null;   // 0..360
+let heading = null;        // 0..360
 let didBuzz = false;
 let qiblaListening = false;
 
-const DEG_THRESHOLD = 5;   // وصول القبلة ±5 درجات
+const DEG_THRESHOLD = 5;   // اهتزاز عند الوصول ±5 درجات
 
 function toRad(d){ return d * Math.PI / 180; }
 function toDeg(r){ return r * 180 / Math.PI; }
@@ -637,10 +638,11 @@ function norm360(a){
   return a;
 }
 function angleDiff(a, b){
+  // يرجع فرق -180..180
   let d = norm360(a) - norm360(b);
   if (d > 180) d -= 360;
   if (d < -180) d += 360;
-  return d; // -180..180
+  return d;
 }
 
 function calcBearing(lat1, lon1, lat2, lon2){
@@ -656,7 +658,6 @@ function calcBearing(lat1, lon1, lat2, lon2){
 
 function updateQiblaUI(){
   if (!qiblaNeedle || !qiblaDeg) return;
-  if (qiblaHint) qiblaHint.textContent = ""; // بدون رسائل
 
   if (qiblaBearing == null || heading == null){
     qiblaDeg.textContent = "--°";
@@ -664,18 +665,23 @@ function updateQiblaUI(){
   }
 
   const rotate = angleDiff(qiblaBearing, heading);
+
+  // نخلي التحويل كامل (عشان ما ينكسر translate)
   qiblaNeedle.style.transform = `translate(-50%,-50%) rotate(${rotate}deg)`;
 
   const err = Math.abs(rotate);
   qiblaDeg.textContent = `زاوية الانحراف عن القبلة: ${Math.round(err)}°`;
 
+  // اهتزاز عند الوصول
   if (err <= DEG_THRESHOLD){
     if (!didBuzz){
       didBuzz = true;
       if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
+      if (qiblaHint) qiblaHint.textContent = "✅ تم ضبط اتجاه القبلة";
     }
   } else {
     didBuzz = false;
+    if (qiblaHint) qiblaHint.textContent = "حرّكي الجوال حتى تقل الزاوية";
   }
 }
 
@@ -687,7 +693,9 @@ function requestLocationForQibla(){
       (pos)=>{
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;
+
         qiblaBearing = calcBearing(lat, lon, KAABA.lat, KAABA.lon);
+
         resolve(true);
       },
       ()=>reject(new Error("GEO_DENIED")),
@@ -697,14 +705,13 @@ function requestLocationForQibla(){
 }
 
 function getHeadingFromEvent(evt){
-  // iOS Safari (أفضل)
+  // iOS Safari (أدق)
   if (typeof evt.webkitCompassHeading === "number" && !Number.isNaN(evt.webkitCompassHeading)){
     return norm360(evt.webkitCompassHeading);
   }
 
   // Android/Chrome
   if (typeof evt.alpha === "number" && !Number.isNaN(evt.alpha)){
-    // ملاحظة: كثير أجهزة تطلع alpha عكسية، هذا الأكثر شيوعًا
     return norm360(360 - evt.alpha);
   }
 
@@ -718,35 +725,14 @@ function onOrientation(evt){
   updateQiblaUI();
 }
 
-async function startQiblaAuto(){
-  didBuzz = false;
+function startQiblaListeners(){
+  if (qiblaListening) return;
 
-  // لازم سياق آمن
-  if (!window.isSecureContext){
-    // بدون رسائل – بس نخليها "--°"
-    return;
-  }
+  // نجرب الاثنين عشان أجهزة مختلفة
+  window.addEventListener("deviceorientationabsolute", onOrientation, true);
+  window.addEventListener("deviceorientation", onOrientation, true);
 
-  try{
-    await requestLocationForQibla();
-
-    // طلب إذن البوصلة في iOS
-    if (typeof DeviceOrientationEvent !== "undefined" &&
-        typeof DeviceOrientationEvent.requestPermission === "function"){
-      const res = await DeviceOrientationEvent.requestPermission();
-      if (res !== "granted") return; // بدون رسائل
-    }
-
-    if (!qiblaListening){
-      window.addEventListener("deviceorientationabsolute", onOrientation, true);
-      window.addEventListener("deviceorientation", onOrientation, true);
-      qiblaListening = true;
-    }
-
-    updateQiblaUI();
-  } catch(e){
-    // بدون رسائل
-  }
+  qiblaListening = true;
 }
 
 function stopQibla(){
@@ -755,6 +741,62 @@ function stopQibla(){
     window.removeEventListener("deviceorientation", onOrientation, true);
     qiblaListening = false;
   }
+  heading = null;
+  didBuzz = false;
+  updateQiblaUI();
+}
+
+async function enableQiblaByButton(){
+  try{
+    didBuzz = false;
+
+    if (!window.isSecureContext){
+      if (qiblaHint) qiblaHint.textContent = "❌ لازم HTTPS أو localhost عشان البوصلة تشتغل";
+      return;
+    }
+
+    if (qiblaHint) qiblaHint.textContent = "جاري طلب إذن الموقع...";
+
+    await requestLocationForQibla();
+
+    // iOS: لازم إذن Motion من زر (user gesture)
+    if (typeof DeviceOrientationEvent !== "undefined" &&
+        typeof DeviceOrientationEvent.requestPermission === "function"){
+      if (qiblaHint) qiblaHint.textContent = "جاري طلب إذن البوصلة...";
+      const res = await DeviceOrientationEvent.requestPermission();
+      if (res !== "granted"){
+        if (qiblaHint) qiblaHint.textContent = "❌ تم رفض إذن البوصلة";
+        return;
+      }
+    }
+
+    startQiblaListeners();
+
+    if (qiblaHint) qiblaHint.textContent = "✅ تم التفعيل، حرّكي الجوال";
+    updateQiblaUI();
+  } catch(e){
+    if (qiblaHint){
+      if (String(e?.message).includes("GEO_DENIED")){
+        qiblaHint.textContent = "❌ تم رفض إذن الموقع";
+      } else if (String(e?.message).includes("NO_GEO")){
+        qiblaHint.textContent = "❌ جهازك لا يدعم تحديد الموقع";
+      } else {
+        qiblaHint.textContent = "❌ تعذر التفعيل، جرّبي Safari/Chrome على الجوال";
+      }
+    }
+  }
+}
+
+// زر التفعيل
+if (qiblaEnableBtn){
+  qiblaEnableBtn.addEventListener("click", enableQiblaByButton);
+}
+
+/* إذا تبين: عند دخول صفحة القبلة يصفّر النص */
+function startQiblaAuto(){
+  // ما نشغله تلقائي بدون زر (عشان iPhone)
+  if (qiblaHint) qiblaHint.textContent = "اضغطي تفعيل واسمحي بالأذونات";
+  qiblaBearing = null;
   heading = null;
   didBuzz = false;
   updateQiblaUI();
