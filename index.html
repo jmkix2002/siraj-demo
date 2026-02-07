@@ -10,16 +10,12 @@
 <body>
   <div class="app">
 
-    <!-- ===================== -->
-    <!-- Splash (اللوقو) -->
-    <!-- ===================== -->
+    <!-- Splash -->
     <section id="splash" class="screen active splash">
       <div class="bg-full"></div>
     </section>
 
-    <!-- ===================== -->
-    <!-- Auth (اختيار: دخول/تسجيل/ضيف) -->
-    <!-- ===================== -->
+    <!-- Auth -->
     <section id="auth" class="screen auth-screen">
       <div class="bg-full"></div>
 
@@ -30,9 +26,7 @@
       </div>
     </section>
 
-    <!-- ===================== -->
     <!-- Login -->
-    <!-- ===================== -->
     <section id="login" class="screen auth-form">
       <div class="mini-top left">
         <button class="icon-btn" type="button" onclick="go('auth')" aria-label="رجوع">←</button>
@@ -52,9 +46,7 @@
       </div>
     </section>
 
-    <!-- ===================== -->
     <!-- Register -->
-    <!-- ===================== -->
     <section id="register" class="screen auth-form">
       <div class="mini-top left">
         <button class="icon-btn" type="button" onclick="go('auth')" aria-label="رجوع">←</button>
@@ -75,15 +67,12 @@
       </div>
     </section>
 
-    <!-- ===================== -->
     <!-- Home -->
-    <!-- ===================== -->
     <section id="home" class="screen">
 
       <div class="topbar">
         <button class="topbtn" type="button" aria-label="الإشعارات">🔔</button>
 
-        <!-- تسجيل خروج -->
         <button class="topbtn" type="button" onclick="logout()" aria-label="تسجيل خروج">
           <svg class="icon24" viewBox="0 0 24 24" aria-hidden="true">
             <path fill="currentColor"
@@ -92,10 +81,8 @@
         </button>
       </div>
 
-      <!-- ترحيب بالنص -->
       <div class="welcome" id="welcomeText">مرحباً</div>
 
-      <!-- مواقيت الصلاة -->
       <div class="prayer-card">
         <div class="prayer-date" id="prayerDate">—</div>
 
@@ -111,19 +98,16 @@
         <div class="prayer-remaining" id="prayerRemaining">—</div>
       </div>
 
-      <!-- ✅ صورة الحشود بدل الخريطة -->
       <div class="map-card crowd-card">
-        <img
-          src="assets/images/crowd-heatmap.png"
-          alt="خريطة الحشود"
-          class="crowd-img"
-        />
+        <img src="assets/images/crowd-heatmap.png" alt="خريطة الحشود" class="crowd-img"/>
       </div>
 
-      <!-- الخدمات -->
+      <!-- ✅ مهم: رجّعنا الخدمات داخل services-grid -->
       <div class="services-grid">
-        <button class="service" type="button" data-service="parking">
-          <div class="circle">P</div><div class="label2">المواقف</div>
+
+        <!-- بدل المواقف = أدعية -->
+        <button class="service" type="button" onclick="go('duas')">
+          <div class="circle">📿</div><div class="label2">أدعية</div>
         </button>
 
         <button class="service" type="button" onclick="go('wudu')">
@@ -134,7 +118,7 @@
           <div class="circle">🚻</div><div class="label2">مرافق دورات المياه</div>
         </button>
 
-        <button class="service" type="button" data-service="access">
+        <button class="service" type="button" onclick="go('paths')">
           <div class="circle">♿</div><div class="label2">مسار ذوي الاحتياجات الخاصة</div>
         </button>
 
@@ -142,8 +126,8 @@
           <div class="circle">🏛️</div><div class="label2">متحف</div>
         </button>
 
-        <button class="service" type="button" data-service="paths">
-          <div class="circle">➡️</div><div class="label2">المسارات</div>
+        <button class="service" type="button" data-service="parking">
+          <div class="circle">P</div><div class="label2">المواقف</div>
         </button>
 
         <button class="service" type="button" data-service="medical">
@@ -157,12 +141,11 @@
         <button class="service" type="button" data-service="bus">
           <div class="circle">🚌</div><div class="label2">مواقف الباصات</div>
         </button>
+
       </div>
     </section>
 
-    <!-- ===================== -->
     <!-- Restrooms -->
-    <!-- ===================== -->
     <section id="restrooms" class="screen">
       <div class="mini-top left">
         <button class="icon-btn" type="button" onclick="go('home')" aria-label="رجوع">←</button>
@@ -204,9 +187,40 @@
       </div>
     </section>
 
-    <!-- ===================== -->
-    <!-- Wudu (مرافق الوضوء) -->
-    <!-- ===================== -->
+    <!-- Duas -->
+    <section id="duas" class="screen">
+      <div class="mini-top left">
+        <button class="icon-btn" type="button" onclick="go('home')" aria-label="رجوع">←</button>
+      </div>
+
+      <div class="service-title-card dua-title-card">
+        <div class="service-title-text">أدعية</div>
+      </div>
+
+      <div class="dua-panel">
+        <div class="dua-grid" id="duaGrid"></div>
+      </div>
+    </section>
+
+    <!-- Dua View -->
+    <section id="duaView" class="screen">
+      <div class="mini-top left">
+        <button class="icon-btn" type="button" onclick="go('duas')" aria-label="رجوع">←</button>
+      </div>
+
+      <div class="service-title-card dua-title-card">
+        <div class="service-title-text" id="duaViewTitle">—</div>
+      </div>
+
+      <div class="dua-view-wrap">
+        <div class="dua-card">
+          <div class="dua-text" id="duaText">—</div>
+          <button class="dua-next" id="duaNextBtn" type="button">>></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Wudu -->
     <section id="wudu" class="screen">
       <div class="mini-top left">
         <button class="icon-btn" type="button" onclick="go('home')" aria-label="رجوع">←</button>
@@ -248,9 +262,7 @@
       </div>
     </section>
 
-    <!-- ===================== -->
-    <!-- QIBLA (تم تعديلها فقط) -->
-    <!-- ===================== -->
+    <!-- Qibla -->
     <section id="qibla" class="screen">
       <div class="mini-top left">
         <button class="icon-btn" type="button" onclick="go('home')" aria-label="رجوع">←</button>
@@ -273,7 +285,6 @@
           <div class="qibla-kaaba">🕋</div>
         </div>
 
-        <!-- ✅ هنا التعديل: رقم منفصل + درجة منفصلة عشان ما يطلع رقمين -->
         <div class="qibla-deg" id="qiblaDeg">
           <span class="qibla-label">زاوية الانحراف عن القبلة:</span>
           <span class="qibla-value"><span id="qiblaDegNum">--</span><span class="deg">°</span></span>
@@ -287,9 +298,32 @@
       </div>
     </section>
 
-    <!-- ===================== -->
-    <!-- QR -->
-    <!-- ===================== -->
+    <!-- Paths -->
+    <section id="paths" class="screen">
+      <div class="mini-top left">
+        <button class="icon-btn" type="button" onclick="go('home')" aria-label="رجوع">←</button>
+      </div>
+
+      <div class="paths-wrap">
+        <div class="paths-map">
+          <img src="assets/images/paths-map.png" alt="خريطة المسارات" class="paths-map-img">
+        </div>
+
+        <button class="paths-dd" id="pathsDdBtn" type="button">
+          <span id="pathsDdText">مسارات</span>
+          <span class="paths-dd-arrow">▾</span>
+        </button>
+
+        <div class="paths-dd-menu hidden" id="pathsDdMenu">
+          <button class="paths-item" type="button" data-path="special_parking">مواقف خاصة</button>
+          <button class="paths-item" type="button" data-path="cars_route">مسار العربات</button>
+          <button class="paths-item" type="button" data-path="special_entry">مدخل مخصص</button>
+          <button class="paths-item" type="button" data-path="elevator">المصعد</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ✅ QR (رجعناه كامل) -->
     <section id="qr" class="screen">
       <div class="mini-top left">
         <button class="icon-btn" type="button" onclick="go('home'); stopCamera();" aria-label="رجوع">←</button>
@@ -303,6 +337,9 @@
         <div class="qr-tap" id="qrTap">اضغط لفتح الكاميرا</div>
       </div>
 
+      <!-- زر فلاش اختياري -->
+      <button class="qr-flash" id="flashBtn" type="button">⚡ فلاش</button>
+
       <div class="qr-result hidden" id="qrResult">
         ✅ تم المسح (محاكاة): <span id="qrResultText"></span>
       </div>
@@ -310,9 +347,7 @@
       <button class="qr-clear" id="qrClearBtn" type="button">مسح</button>
     </section>
 
-    <!-- ===================== -->
     <!-- Bottom nav -->
-    <!-- ===================== -->
     <nav class="nav is-hidden" id="bottomNav">
       <button class="navbtn" id="navMenu" type="button" onclick="toastNotAvailable()" aria-label="القائمة">
         <span class="navicon">▦</span>
