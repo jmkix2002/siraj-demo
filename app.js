@@ -520,6 +520,45 @@ if (wuduStartNavBtn){
 }
 
 /* =========================
+   PATHS (Dropdown + options)
+========================= */
+const pathsDdBtn  = document.getElementById("pathsDdBtn");
+const pathsDdMenu = document.getElementById("pathsDdMenu");
+const pathsDdText = document.getElementById("pathsDdText");
+
+function closePathsMenu(){
+  if (pathsDdMenu) pathsDdMenu.classList.add("hidden");
+}
+
+if (pathsDdBtn && pathsDdMenu){
+  pathsDdBtn.addEventListener("click", ()=>{
+    pathsDdMenu.classList.toggle("hidden");
+  });
+
+  // إغلاق القائمة إذا ضغطنا خارجها
+  document.addEventListener("click", (e)=>{
+    const inside = pathsDdBtn.contains(e.target) || pathsDdMenu.contains(e.target);
+    if (!inside) closePathsMenu();
+  });
+
+  // اختيار عنصر
+  pathsDdMenu.querySelectorAll(".paths-item").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const label = btn.textContent.trim();
+      if (pathsDdText) pathsDdText.textContent = label;
+      closePathsMenu();
+
+      // اختياري: هنا تغيرين الصورة حسب المسار
+      // مثال:
+      // const img = document.querySelector("#paths .paths-map-img");
+      // const key = btn.getAttribute("data-path");
+      // if (img && key === "special_parking") img.src = "assets/images/paths-parking.png";
+    });
+  });
+}
+
+
+/* =========================
    QR Camera
 ========================= */
 let qrStream = null;
@@ -855,3 +894,157 @@ function startQiblaAuto(){
   if (qiblaHint) qiblaHint.textContent = "اضغطي تفعيل واسمحي بالأذونات";
   updateQiblaUI();
 }
+/* =========================
+   DUAS (List + View)
+========================= */
+const DUA_DATA = [
+  {
+    title: "أدعية من القرآن",
+    duas: [
+      "رَبَّنَا لَا تُؤَاخِذْنَا إِن نَّسِينَا أَوْ أَخْطَأْنَا...\nوَاعْفُ عَنَّا وَاغْفِرْ لَنَا وَارْحَمْنَا\nأَنتَ مَوْلَانَا فَانصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ",
+      "رَبِّ اشْرَحْ لِي صَدْرِي * وَيَسِّرْ لِي أَمْرِي",
+      "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ"
+    ]
+  },
+  {
+    title: "من دعاء الرسول",
+    duas: [
+      "اللهم إني أسألك العفوَ والعافيةَ في الدنيا والآخرة",
+      "اللهم آتنا في الدنيا حسنةً وفي الآخرة حسنةً وقِنا عذاب النار",
+      "اللهم إني أعوذ بك من الهمّ والحَزَن، والعجزِ والكسل..."
+    ]
+  },
+  {
+    title: "دعاء الكرب",
+    duas: [
+      "لا إله إلا الله العظيم الحليم، لا إله إلا الله رب العرش العظيم...",
+      "حسبي الله لا إله إلا هو عليه توكلت وهو رب العرش العظيم"
+    ]
+  },
+  {
+    title: "أدعية للرزق والبركة",
+    duas: [
+      "اللهم اكفني بحلالك عن حرامك وأغنني بفضلك عمّن سواك",
+      "اللهم بارك لي فيما رزقتني وزدني من فضلك"
+    ]
+  },
+  {
+    title: "أدعية الطواف",
+    duas: [
+      "ربنا آتنا في الدنيا حسنة وفي الآخرة حسنة وقنا عذاب النار",
+      "اللهم اجعلها عمرةً مقبولةً وسعياً مشكوراً وذنباً مغفوراً"
+    ]
+  },
+  {
+    title: "دعاء الوقوف على الصفا والمروة",
+    duas: [
+      "لا إله إلا الله وحده لا شريك له، له الملك وله الحمد وهو على كل شيء قدير",
+      "اللهم إني أسألك الهدى والتقى والعفاف والغنى"
+    ]
+  },
+  {
+    title: "أفضل الذكر",
+    duas: [
+      "سبحان الله وبحمده، سبحان الله العظيم",
+      "لا إله إلا الله وحده لا شريك له..."
+    ]
+  },
+  {
+    title: "دعاء الحمد والثناء",
+    duas: [
+      "اللهم لك الحمد كما ينبغي لجلال وجهك وعظيم سلطانك",
+      "الحمد لله حمداً كثيراً طيباً مباركاً فيه"
+    ]
+  },
+  {
+    title: "الذكر عند المشعر الحرام",
+    duas: [
+      "الله أكبر الله أكبر لا إله إلا الله، والله أكبر ولله الحمد",
+      "اللهم اهدِ قلبي وسدد لساني"
+    ]
+  },
+  {
+    title: "الاستغفار والتوبة",
+    duas: [
+      "أستغفر الله العظيم وأتوب إليه",
+      "رب اغفر لي وتب علي إنك أنت التواب الرحيم"
+    ]
+  },
+  {
+    title: "أدعية يوم عرفة",
+    duas: [
+      "لا إله إلا الله وحده لا شريك له، له الملك وله الحمد وهو على كل شيء قدير",
+      "اللهم اجعلني من عتقائك من النار واغفر لي ولوالدي"
+    ]
+  },
+  {
+    title: "أدعية عامة",
+    duas: [
+      "اللهم أصلح لي ديني الذي هو عصمة أمري، وأصلح لي دنياي...",
+      "اللهم اجعلني لك شكاراً لك ذكاراً لك رهّاباً"
+    ]
+  }
+];
+
+const duaGrid = document.getElementById("duaGrid");
+const duaViewTitle = document.getElementById("duaViewTitle");
+const duaText = document.getElementById("duaText");
+const duaNextBtn = document.getElementById("duaNextBtn");
+
+let currentDuaCategoryIndex = 0;
+let currentDuaIndex = 0;
+
+function renderDuaGrid(){
+  if (!duaGrid) return;
+  duaGrid.innerHTML = "";
+
+  DUA_DATA.forEach((cat, idx)=>{
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "dua-btn";
+    btn.textContent = cat.title;
+
+    btn.addEventListener("click", ()=>{
+      currentDuaCategoryIndex = idx;
+      currentDuaIndex = 0;
+      openDuaView();
+    });
+
+    duaGrid.appendChild(btn);
+  });
+}
+
+function openDuaView(){
+  const cat = DUA_DATA[currentDuaCategoryIndex];
+  if (duaViewTitle) duaViewTitle.textContent = cat.title;
+
+  showCurrentDua();
+  go("duaView");
+}
+
+function showCurrentDua(){
+  const cat = DUA_DATA[currentDuaCategoryIndex];
+  const list = cat.duas || [];
+  if (!list.length){
+    if (duaText) duaText.textContent = "لا يوجد أدعية حالياً";
+    return;
+  }
+  const txt = list[currentDuaIndex] || "—";
+  if (duaText) duaText.textContent = txt;
+}
+
+if (duaNextBtn){
+  duaNextBtn.addEventListener("click", ()=>{
+    const cat = DUA_DATA[currentDuaCategoryIndex];
+    const list = cat.duas || [];
+    if (!list.length) return;
+
+    currentDuaIndex = (currentDuaIndex + 1) % list.length;
+    showCurrentDua();
+  });
+}
+
+/* تشغيل بناء القائمة عند تحميل الصفحة */
+document.addEventListener("DOMContentLoaded", ()=>{
+  renderDuaGrid();
+});
