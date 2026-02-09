@@ -95,9 +95,24 @@ function setNavVisible(visible){
   bottomNav.classList.toggle("is-hidden", !visible);
 }
 function updateUIForScreen(screenId){
-  const showNavScreens = ["home", "restrooms", "wudu", "qr", "qibla"];
+  const showNavScreens = [
+    "home",
+    "restrooms",
+    "wudu",
+    "qibla",
+    "qr",
+    "routes",      // المسارات (صورة الخريطة)
+    "duas",        // الأدعية
+    "duaView",     // عرض الدعاء
+    "paths",       // مسار ذوي الاحتياجات الخاصة
+    "medical",     // الخدمات الطبية (إذا عندك شاشة لها)
+    "mosques" ,     // المساجد
+    "parking",
+  ];
+
   setNavVisible(showNavScreens.includes(screenId) && isLoggedIn());
 }
+
 
 /* Guest */
 const guestBtn = document.getElementById("guestBtn");
@@ -1047,4 +1062,171 @@ if (duaNextBtn){
 /* تشغيل بناء القائمة عند تحميل الصفحة */
 document.addEventListener("DOMContentLoaded", ()=>{
   renderDuaGrid();
+});
+ /* =========================
+   MEDICAL (Hospitals UI)
+========================= */
+const hospitalList = document.getElementById("hospitalList");
+const hospitalSearch = document.getElementById("hospitalSearch");
+
+const HOSPITALS = [
+  {
+    id: "h1",
+    name: "مدينة الملك سلمان بن عبدالعزيز الطبية",
+    sub: "شارع عبدالحميد بن عبدالله بن أبي أويس, Mahzur, Madinah 42316",
+    img: "./assets/images/h1.jpg"
+  },
+  {
+    id: "h2",
+    name: "مستشفى الحياة الوطني - المدينة المنورة",
+    sub: "Al Hijrah Rd, Al Jumuah, Madinah 42316",
+    img: "./assets/images/h2.png"
+  },
+  {
+    id: "h3",
+    name: "مستشفى الدكتور سليمان فقيه",
+    sub: "King Abdullah Branch Rd, King Abdullah bin Abdulaziz Rd, Madinah 42312",
+    img: "./assets/images/h3.jpg"
+  },
+  {
+    id: "h4",
+    name:"مستشفى االدينة الوطني ",
+    sub: "الحزام سابقا, Prince Abdulmajeed Ibn Abdulaziz, Ash Shuraybat, Madinah 42316",
+    img: "./assets/images/h4.jpg"
+  },
+  {
+    id: "h5",
+    name: "مستشفى أحد الأنصار الجديد",
+    sub: "DMWD4461، 6579 عمران ابن ابي عطاء القصاب، حي الرانوناء، 4461, Madinah 42392",
+    img: "./assets/images/h5.png"
+  }
+];
+
+function renderHospitals(list){
+  if (!hospitalList) return;
+  hospitalList.innerHTML = "";
+
+  list.forEach(h => {
+    const card = document.createElement("div");
+    card.className = "hospital-card";
+
+    card.innerHTML = `
+      <button class="hospital-arrow" type="button" aria-label="تفاصيل">‹</button>
+
+      <div class="hospital-info">
+        <h3 class="hospital-name">${h.name}</h3>
+        <p class="hospital-sub">${h.sub}</p>
+      </div>
+
+      <img class="hospital-img" src="${h.img}" alt="${h.name}">
+    `;
+
+    // لو تبين عند الضغط يفتح صفحة تفاصيل أو خريطة:
+    card.querySelector(".hospital-arrow").addEventListener("click", ()=>{
+      alert("✅ تفاصيل المستشفى (محاكاة): " + h.name);
+      // هنا تقدرين تسوين go('hospitalDetails') أو تفتحين Google Maps
+    });
+
+    hospitalList.appendChild(card);
+  });
+}
+
+function filterHospitals(){
+  const q = (hospitalSearch?.value || "").trim().toLowerCase();
+  const filtered = HOSPITALS.filter(h =>
+    h.name.toLowerCase().includes(q) || h.sub.toLowerCase().includes(q)
+  );
+  renderHospitals(filtered);
+}
+
+if (hospitalSearch){
+  hospitalSearch.addEventListener("input", filterHospitals);
+}
+
+// تشغيل أولي
+document.addEventListener("DOMContentLoaded", ()=>{
+  renderHospitals(HOSPITALS);
+});
+ 
+/* =========================
+   MOSQUES (Same as Hospitals)
+========================= */
+const mosqueList   = document.getElementById("mosqueList");
+const mosqueSearch = document.getElementById("mosqueSearch");
+
+const MOSQUES = [
+  {
+    id: "m1",
+    name: "مسجد الجمعة",
+    sub: "Al Jummah, Madinah 42316",
+    img: "assets/images/m1.jpg"
+  },
+  {
+    id: "m2",
+    name: "مسجد الغمامة",
+    sub: "Quba Rd, Madinah 42316",
+    img: "assets/images/m2.jpg"
+  },
+  {
+    id: "m3",
+    name: "السبعة المساجد",
+    sub: "Sayed Al Shohada, Madinah 42321",
+    img: "assets/images/m3.jpg"
+  },
+  {
+    id: "m4",
+    name: "مسجد سيد الشهداء",
+    sub: "Uhud Area, Madinah 42321",
+    img: "assets/images/m4.jpg"
+  },
+  {
+    id: "m5",
+    name: "مسجد الميقات",
+    sub: "Abyar Ali, Madinah",
+    img: "assets/images/m5.jpg"
+  }
+];
+
+function renderMosques(list){
+  if (!mosqueList) return;
+  mosqueList.innerHTML = "";
+
+  list.forEach(m => {
+    const card = document.createElement("div");
+    card.className = "hospital-card"; // نفس كرت المستشفى
+
+    card.innerHTML = `
+      <button class="hospital-arrow" type="button">↰</button>
+
+      <div class="hospital-info">
+        <h3 class="hospital-name">${m.name}</h3>
+        <p class="hospital-sub">${m.sub}</p>
+      </div>
+
+      <img class="hospital-img" src="${m.img}" alt="${m.name}">
+    `;
+
+    card.querySelector(".hospital-arrow").addEventListener("click", ()=>{
+      alert("🕌 فتح تفاصيل المسجد (محاكاة)");
+    });
+
+    mosqueList.appendChild(card);
+  });
+}
+
+function filterMosques(){
+  const q = (mosqueSearch?.value || "").toLowerCase();
+  const filtered = MOSQUES.filter(m =>
+    m.name.toLowerCase().includes(q) ||
+    m.sub.toLowerCase().includes(q)
+  );
+  renderMosques(filtered);
+}
+
+if (mosqueSearch){
+  mosqueSearch.addEventListener("input", filterMosques);
+}
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  renderMosques(MOSQUES);
 });
