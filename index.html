@@ -122,28 +122,36 @@
           <div class="circle">♿</div><div class="label2">مسار ذوي الاحتياجات الخاصة</div>
         </button>
 
-        <button class="service" type="button" data-service="museum">
-          <div class="circle">🏛️</div><div class="label2">متحف</div>
-        </button>
+        <button class="service" type="button" onclick="go('mosques')">
+  <div class="circle">🕌</div>
+  <div class="label2">المساجد</div>
+</button>
 
-        <button class="service" type="button" data-service="parking">
-          <div class="circle">P</div><div class="label2">المواقف</div>
-        </button>
 
-        <button class="service" type="button" data-service="medical">
-          <div class="circle">🩺</div><div class="label2">خدمات طبية</div>
-        </button>
+        <button class="service" type="button" onclick="go('parking')">
+  <div class="circle">🅿️</div>
+  <div class="label2">المواقف</div>
+</button>
+
+
+        <button class="service" type="button" onclick="go('medical')">
+  <div class="circle">🩺</div><div class="label2">خدمات طبية</div>
+</button>
+
 
         <button class="service" type="button" onclick="go('qibla')">
           <div class="circle">🕋</div><div class="label2">اتجاه القبلة</div>
         </button>
 
-        <button class="service" type="button" data-service="bus">
-          <div class="circle">🚌</div><div class="label2">مواقف الباصات</div>
-        </button>
+        <button class="service" type="button" onclick="go('routes')">
+  <div class="circle">🧭</div><div class="label2">المسارات</div>
+</button>
+
 
       </div>
     </section>
+
+    
 
     <!-- Restrooms -->
     <section id="restrooms" class="screen">
@@ -219,6 +227,78 @@
         </div>
       </div>
     </section>
+
+
+
+    <section id="routes" class="screen routes-screen">
+
+  <div class="mini-top left">
+    <button class="icon-btn back-dark" type="button" onclick="go('home')" aria-label="رجوع">←</button>
+  </div>
+
+  <img id="routesImg" class="routes-img" src="assets/images/m.jpg" alt="خريطة المسارات">
+
+  <div class="routes-overlay">
+    <div class="route-input">
+      <span class="icon">🔍</span>
+      <span class="text">نقطة البداية...</span>
+    </div>
+
+    <div class="route-input">
+      <span class="icon">📍</span>
+      <span class="text">حدد وجهتك</span>
+    </div>
+  </div>
+
+</section>
+
+<!-- Mosques -->
+<section id="mosques" class="screen">
+  <div class="mini-top left">
+    <button class="icon-btn" type="button" onclick="go('home')" aria-label="رجوع">←</button>
+  </div>
+
+  <div class="medical-header">
+    <h1 class="medical-title">المساجد</h1>
+  </div>
+
+  <div class="medical-search">
+    <input id="mosqueSearch" class="medical-input" type="text" placeholder="البحث عن مسجد">
+    <button class="medical-search-btn" type="button">🔍</button>
+  </div>
+
+  <div class="medical-list" id="mosqueList"></div>
+</section>
+
+
+<section id="parking" class="screen parking-screen">
+
+  <div class="mini-top left">
+    <button class="icon-btn back-dark"
+            type="button"
+            onclick="go('home')"
+            aria-label="رجوع">←</button>
+  </div>
+
+  <img id="parkingImg"
+       class="parking-img"
+       src="assets/images/parking.jpg"
+       alt="خريطة المواقف">
+
+  <div class="parking-overlay">
+    <div class="parking-input">
+      <span class="icon">🅿️</span>
+      <span class="text">ابحث عن موقف...</span>
+    </div>
+
+    <div class="parking-input">
+      <span class="icon">📍</span>
+      <span class="text">أقرب موقف متاح</span>
+    </div>
+  </div>
+
+</section>
+
 
     <!-- Wudu -->
     <section id="wudu" class="screen">
@@ -322,6 +402,23 @@
         </div>
       </div>
     </section>
+<!-- Medical -->
+<section id="medical" class="screen">
+  <div class="mini-top left">
+    <button class="icon-btn" type="button" onclick="go('home')" aria-label="رجوع">←</button>
+  </div>
+
+  <div class="medical-header">
+    <h1 class="medical-title">الخدمات الطبية</h1>
+  </div>
+
+  <div class="medical-search">
+    <input id="hospitalSearch" class="medical-input" type="text" placeholder="البحث عن مستشفيات">
+    <button class="medical-search-btn" type="button" aria-label="بحث">🔎</button>
+  </div>
+
+  <div class="medical-list" id="hospitalList"></div>
+</section>
 
     <!-- ✅ QR (رجعناه كامل) -->
     <section id="qr" class="screen">
